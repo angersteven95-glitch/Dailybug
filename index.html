@@ -817,11 +817,12 @@
           <div class="small" style="margin-top:12px;">Backup saves active and deleted entries so deletes can sync too. Data still saves locally first.</div>
         </div>
         <div class="panel">
-          <h2>Data</h2>
-          <div class="settings-row"><div><strong>Entries</strong><div class="small">${visibleEntries().length} active, ${entries.filter(e=>e.deleted_at).length} deleted</div></div></div>
-          <button class="secondary-btn" onclick="seedDemoData()">Add Demo Data</button>
-          <button class="danger-btn" onclick="clearAllData()">Clear All Local Data</button>
-        </div>
+  <h2>Data</h2>
+  <div class="settings-row"><div><strong>Entries</strong><div class="small">${visibleEntries().length} active, ${entries.filter(e=>e.deleted_at).length} deleted</div></div></div>
+  <button class="secondary-btn" onclick="window.location.href='https://angersteven95-glitch.github.io/Tracker/onetimeimport.html'">One Time Import</button>
+  <button class="secondary-btn" onclick="seedDemoData()">Add Demo Data</button>
+  <button class="danger-btn" onclick="clearAllData()">Clear All Local Data</button>
+</div>
         <div class="panel"><h2>About</h2><div class="small">Single-file local web app. Add this page to your iPhone Home Screen from Safari for app-like use.</div></div>
       `;
     }
