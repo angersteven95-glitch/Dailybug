@@ -608,6 +608,31 @@
     .tracker-card.card-custom .track-part.left {
       border-right-color: rgba(255,255,255,.22);
     }
+
+    .visible-log-card {
+      position: relative;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .visible-log-card .card-actions {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .visible-log-card .edit-icon-btn {
+      margin: 0;
+    }
+    .visible-log-card .toggle-switch {
+      margin: 0;
+    }
+    .custom-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 0 0 auto;
+      margin-left: auto;
+    }
     .custom-color-dot {
       width: 18px;
       height: 18px;
@@ -1429,15 +1454,21 @@
       const on = isLogButtonVisible(type);
       const isCustom = isCustomType(type);
       const colorDot = isCustom ? `<span class="custom-color-dot" style="background:${customTypeColor(type)}"></span>` : '';
-      const actions = isCustom
-        ? `<div class="card-actions">
-            <button class="edit-icon-btn" aria-label="Edit ${escapeHtml(label)}" onclick="event.stopPropagation(); openCustomLogTypeEditor('${type}')">${pencilIcon()}</button>
-            <span class="toggle-switch ${on ? 'on' : ''}" aria-hidden="true"></span>
-          </div>`
-        : `<span class="toggle-switch ${on ? 'on' : ''}" aria-hidden="true"></span>`;
+      if (isCustom) {
+        return `<div class="visible-log-card">
+          <div onclick="toggleLogButtonVisibility('${type}')" style="flex:1; min-width:0; cursor:pointer;">
+            <strong>${colorDot}${escapeHtml(label)}</strong>
+            <div class="small">${on ? 'Shown on Log screen' : 'Hidden from Log screen'}</div>
+          </div>
+          <div class="custom-actions">
+            <button class="edit-icon-btn" aria-label="Edit ${escapeHtml(label)}" onclick="openCustomLogTypeEditor('${type}')">${pencilIcon()}</button>
+            <button class="toggle-switch ${on ? 'on' : ''}" aria-label="${on ? 'Hide' : 'Show'} ${escapeHtml(label)}" onclick="toggleLogButtonVisibility('${type}')"></button>
+          </div>
+        </div>`;
+      }
       return `<button class="visible-log-card" onclick="toggleLogButtonVisibility('${type}')">
-        <div><strong>${colorDot}${escapeHtml(label)}</strong><div class="small">${on ? 'Shown on Log screen' : 'Hidden from Log screen'}</div></div>
-        ${actions}
+        <div><strong>${escapeHtml(label)}</strong><div class="small">${on ? 'Shown on Log screen' : 'Hidden from Log screen'}</div></div>
+        <span class="toggle-switch ${on ? 'on' : ''}" aria-hidden="true"></span>
       </button>`;
     }
     function toggleLogButtonVisibility(type) {
