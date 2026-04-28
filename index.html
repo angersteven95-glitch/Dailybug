@@ -578,6 +578,36 @@
       border: 1px solid var(--line);
       box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
     }
+
+    .edit-icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      background: var(--panel);
+      color: var(--muted);
+      border: 1px solid var(--line);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      flex: 0 0 auto;
+    }
+    .edit-icon-btn svg {
+      width: 17px;
+      height: 17px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .tracker-card.card-custom .track-part {
+      background: transparent !important;
+      color: inherit !important;
+    }
+    .tracker-card.card-custom .track-part.left {
+      border-right-color: rgba(255,255,255,.22);
+    }
     .custom-color-dot {
       width: 18px;
       height: 18px;
@@ -810,7 +840,7 @@
     function trackerCard(type, cardClass, counterText, full = false) {
       const labelHtml = settings.showLogScreenLabels ? `<div class="log-label">${escapeHtml(typeLabel(type))}</div>` : '';
       const counterHtml = `<div class="log-counter-row"><div class="counter">${counterText}</div>${labelHtml}</div>`;
-      const style = isCustomType(type) ? `style="background: linear-gradient(135deg, ${customTypeColor(type)}, rgba(35,35,35,.75)); color:#f4f4f4;"` : '';
+      const style = isCustomType(type) ? `style="--custom-log-color:${customTypeColor(type)}; background: linear-gradient(135deg, var(--custom-log-color), rgba(35,35,35,.75)); color:#f4f4f4;"` : '';
       if (full) {
         return `${counterHtml}
           <div class="tracker-card full ${cardClass}" ${style}>
@@ -1392,20 +1422,22 @@
       settings.showLogScreenLabels = !settings.showLogScreenLabels;
       saveSettings(); render(); toast(`Log screen labels ${settings.showLogScreenLabels ? 'shown' : 'hidden'}`);
     }
+    function pencilIcon() {
+      return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.8 2.8 0 0 0-4-4L4 16v4z"></path><path d="M13.5 6.5l4 4"></path></svg>`;
+    }
     function visibleLogToggleRow(type, label) {
       const on = isLogButtonVisible(type);
       const isCustom = isCustomType(type);
-      const custom = customTypeById(type);
       const colorDot = isCustom ? `<span class="custom-color-dot" style="background:${customTypeColor(type)}"></span>` : '';
-      const customActions = isCustom ? `<div class="card-actions">
-          <button class="mini-btn" onclick="event.stopPropagation(); openCustomColorPicker('${type}')">Color</button>
-          <button class="mini-btn" onclick="event.stopPropagation(); renameCustomLogType('${type}')">Rename</button>
-          <button class="mini-btn danger" onclick="event.stopPropagation(); deleteCustomLogType('${type}')">Delete</button>
-          <span class="toggle-switch ${on ? 'on' : ''}" aria-hidden="true"></span>
-        </div>` : `<span class="toggle-switch ${on ? 'on' : ''}" aria-hidden="true"></span>`;
+      const actions = isCustom
+        ? `<div class="card-actions">
+            <button class="edit-icon-btn" aria-label="Edit ${escapeHtml(label)}" onclick="event.stopPropagation(); openCustomLogTypeEditor('${type}')">${pencilIcon()}</button>
+            <span class="toggle-switch ${on ? 'on' : ''}" aria-hidden="true"></span>
+          </div>`
+        : `<span class="toggle-switch ${on ? 'on' : ''}" aria-hidden="true"></span>`;
       return `<button class="visible-log-card" onclick="toggleLogButtonVisibility('${type}')">
         <div><strong>${colorDot}${escapeHtml(label)}</strong><div class="small">${on ? 'Shown on Log screen' : 'Hidden from Log screen'}</div></div>
-        ${customActions}
+        ${actions}
       </button>`;
     }
     function toggleLogButtonVisibility(type) {
@@ -1431,6 +1463,16 @@
       settings.visibleLogButtons[id] = true;
       saveSettings(); render(); toast('Log type added');
     }
+    function openCustomLogTypeEditor(id) {
+      const item = customTypeById(id);
+      if (!item) return;
+      openSheet(`
+        <div class="sheet-head"><div><div class="sheet-title">Edit Log Type</div><div class="small">${escapeHtml(item.label)}</div></div><button class="icon-btn" onclick="closeSheet()">×</button></div>
+        <button class="secondary-btn" onclick="renameCustomLogType('${id}')">Rename</button>
+        <button class="secondary-btn" onclick="openCustomColorPicker('${id}')">Change Color</button>
+        <button class="danger-btn" onclick="deleteCustomLogType('${id}')">Delete Log Type</button>
+      `);
+    }
     function renameCustomLogType(id) {
       const item = (settings.customLogTypes || []).find(x => x.id === id);
       if (!item) return;
@@ -1438,7 +1480,7 @@
       if (!value || !value.trim()) return;
       item.label = value.trim();
       item.updated_at = nowIso();
-      saveSettings(); render(); toast('Log type renamed');
+      saveSettings(); closeSheet(); render(); toast('Log type renamed');
     }
     function deleteCustomLogType(id) {
       const item = (settings.customLogTypes || []).find(x => x.id === id);
@@ -1448,7 +1490,7 @@
       item.updated_at = nowIso();
       settings.visibleLogButtons = settings.visibleLogButtons || {};
       settings.visibleLogButtons[id] = false;
-      saveSettings(); render(); toast('Log type deleted');
+      saveSettings(); closeSheet(); render(); toast('Log type deleted');
     }
     function openCustomColorPicker(id) {
       const item = customTypeById(id);
@@ -1458,6 +1500,7 @@
         <div class="custom-color-grid">
           ${CUSTOM_LOG_COLORS.map(c => `<button class="color-choice" style="background:${c.value}" aria-label="${c.name}" onclick="setCustomLogTypeColor('${id}', '${c.value}')"></button>`).join('')}
         </div>
+        <button class="secondary-btn" onclick="openCustomLogTypeEditor('${id}')">Back</button>
       `);
     }
     function setCustomLogTypeColor(id, color) {
