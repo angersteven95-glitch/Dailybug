@@ -1,0 +1,987 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111111" />
+  <title>Log</title>
+  <style>
+    :root {
+      --bg: #101010;
+      --panel: #171717;
+      --panel-2: #202020;
+      --panel-3: #292929;
+      --text: #eeeeee;
+      --muted: #a7a7a7;
+      --faint: #6f6f6f;
+      --line: #333333;
+      --accent: #c17f32;
+      --accent-2: #e4a85b;
+      --green: #4f8f5b;
+      --orange: #b66d2f;
+      --red: #a84444;
+      --one: #80683d;
+      --one-soft: #5b4b31;
+      --two: #5a4a3f;
+      --two-soft: #453a33;
+      --three: #bfc2c4;
+      --three-soft: #74787b;
+      --feeling: #343434;
+      --radius: 22px;
+      --shadow: 0 14px 35px rgba(0,0,0,.35);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; border: 0; }
+    textarea, input, select {
+      width: 100%;
+      background: #111;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      outline: none;
+    }
+    textarea { min-height: 110px; resize: vertical; }
+
+    .app {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 18px 16px calc(90px + var(--safe-bottom));
+    }
+
+    header.top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 2px 18px;
+    }
+    .title { font-size: 30px; font-weight: 750; letter-spacing: -0.04em; }
+    .sync-chip {
+      color: var(--muted);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 12px;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .counter {
+      color: var(--muted);
+      font-size: 14px;
+      margin: 14px 8px 8px;
+      letter-spacing: .01em;
+    }
+
+    .tracker-card {
+      height: 98px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,.06);
+      margin-bottom: 10px;
+    }
+    .tracker-card.full { grid-template-columns: 1fr; }
+    .track-part {
+      min-width: 0;
+      color: rgba(255,255,255,.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: filter .12s ease, transform .12s ease;
+    }
+    .track-part:active { filter: brightness(1.18); transform: scale(.992); }
+    .track-part.left { border-right: 1px solid rgba(255,255,255,.16); }
+    .track-part.right::after, .track-part.fullbtn::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,0));
+      pointer-events: none;
+    }
+    .card-one .left { background: var(--one-soft); }
+    .card-one .right { background: var(--one); }
+    .card-two .left { background: var(--two-soft); }
+    .card-two .right { background: var(--two); }
+    .card-three .left { background: var(--three-soft); color: #111; }
+    .card-three .right { background: var(--three); color: #111; }
+    .card-feeling .fullbtn { background: var(--feeling); }
+
+    .rewind-icon { width: 34px; height: 34px; opacity: .88; }
+    .track-now-label { font-size: 13px; font-weight: 700; opacity: .34; letter-spacing: .08em; text-transform: uppercase; }
+
+    .nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 520px;
+      padding: 10px 12px calc(10px + var(--safe-bottom));
+      background: linear-gradient(to top, rgba(16,16,16,.98), rgba(16,16,16,.86));
+      backdrop-filter: blur(14px);
+      border-top: 1px solid rgba(255,255,255,.06);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      z-index: 50;
+    }
+    .nav button {
+      color: var(--muted);
+      background: transparent;
+      border-radius: 16px;
+      padding: 10px 5px;
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .nav button.active { color: #111; background: var(--accent-2); }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      margin: 12px 0;
+    }
+    .panel h2, .panel h3 { margin: 0 0 12px; letter-spacing: -0.02em; }
+    .panel h2 { font-size: 22px; }
+    .panel h3 { font-size: 17px; color: #e7e7e7; }
+    .small { color: var(--muted); font-size: 13px; line-height: 1.4; }
+
+    .sheet-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.58);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .16s ease;
+      z-index: 80;
+    }
+    .sheet-backdrop.show { opacity: 1; pointer-events: auto; }
+    .sheet {
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      transform: translate(-50%, 110%);
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow: auto;
+      background: #171717;
+      border-radius: 28px 28px 0 0;
+      border: 1px solid var(--line);
+      padding: 12px 16px calc(18px + var(--safe-bottom));
+      z-index: 90;
+      transition: transform .2s ease;
+      box-shadow: 0 -20px 60px rgba(0,0,0,.55);
+    }
+    .sheet.show { transform: translate(-50%, 0); }
+    .sheet-handle { width: 48px; height: 5px; border-radius: 99px; background: #4a4a4a; margin: 2px auto 16px; }
+    .sheet-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; margin-bottom: 12px; }
+    .sheet-title { font-size: 24px; font-weight: 750; letter-spacing: -0.03em; }
+    .icon-btn {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      width: 42px;
+      height: 42px;
+      font-size: 20px;
+    }
+    .section-label { color: var(--muted); margin: 18px 0 10px 2px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+    .pill-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+    .pill {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 12px 15px;
+      font-size: 15px;
+      font-weight: 650;
+    }
+    .pill.selected { background: var(--accent-2); color: #111; border-color: var(--accent-2); }
+    .save-btn, .secondary-btn, .danger-btn {
+      width: 100%;
+      border-radius: 18px;
+      padding: 15px;
+      font-weight: 800;
+      margin-top: 16px;
+    }
+    .save-btn { background: var(--accent-2); color: #111; }
+    .secondary-btn { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); }
+    .danger-btn { background: rgba(168,68,68,.18); color: #ffb3b3; border: 1px solid rgba(168,68,68,.45); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .month-head { display: flex; align-items: center; justify-content: space-between; margin: 8px 0 12px; }
+    .month-title { font-size: 22px; font-weight: 750; letter-spacing: -0.03em; }
+    .arrow-row { display: flex; gap: 8px; }
+    .arrow-row button { width: 42px; height: 42px; border-radius: 14px; background: var(--panel-2); color: var(--text); border: 1px solid var(--line); font-size: 20px; }
+    .dow, .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .dow div { color: var(--faint); text-align: center; font-size: 11px; font-weight: 800; padding: 5px 0; }
+    .day {
+      min-height: 58px;
+      background: var(--panel);
+      border: 1px solid #272727;
+      border-radius: 15px;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+    }
+    .day.empty { opacity: .25; }
+    .date-num { font-size: 12px; color: var(--muted); }
+    .badge {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 850;
+      font-size: 13px;
+      margin: auto auto 0;
+    }
+    .badge.low { background: #050505; color: white; border: 1px solid #333; }
+    .badge.mid { background: var(--green); color: white; }
+    .badge.high { background: var(--orange); color: white; }
+    .badge.max { background: var(--red); color: white; }
+    .legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+    .legend-item { color: var(--muted); font-size: 11px; text-align: center; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 8px 4px; }
+
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+    }
+    .stat .value { font-size: 25px; font-weight: 850; letter-spacing: -0.04em; }
+    .stat .label { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .list { display: flex; flex-direction: column; gap: 8px; }
+    .entry-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .entry-main { min-width: 0; }
+    .entry-title { font-weight: 800; }
+    .entry-sub { color: var(--muted); font-size: 12px; margin-top: 3px; overflow-wrap: anywhere; }
+    .row-actions { display: flex; gap: 8px; }
+    .mini-btn { background: #111; color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; font-size: 12px; }
+    .mini-btn.danger { color: #ffb3b3; }
+
+
+    .legend-item.low-key::before,
+    .legend-item.mid-key::before,
+    .legend-item.high-key::before,
+    .legend-item.max-key::before {
+      content: "";
+      display: block;
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      margin: 0 auto 6px;
+      border: 1px solid rgba(255,255,255,.18);
+    }
+    .legend-item.low-key::before { background: #050505; }
+    .legend-item.mid-key::before { background: var(--green); }
+    .legend-item.high-key::before { background: var(--orange); }
+    .legend-item.max-key::before { background: var(--red); }
+
+    .entry-row.type-one { background: linear-gradient(135deg, var(--one-soft), rgba(91,75,49,.35)); border-color: rgba(128,104,61,.8); }
+    .entry-row.type-two { background: linear-gradient(135deg, var(--two-soft), rgba(69,58,51,.35)); border-color: rgba(90,74,63,.85); }
+    .entry-row.type-three { background: linear-gradient(135deg, var(--three-soft), rgba(116,120,123,.28)); border-color: rgba(191,194,196,.55); }
+    .entry-row.type-feeling { background: linear-gradient(135deg, #343434, rgba(52,52,52,.35)); border-color: rgba(120,120,120,.4); }
+    .entry-row.type-three .entry-title, .entry-row.type-three .entry-sub { color: #f2f2f2; }
+    .sync-form { display: grid; gap: 10px; margin-top: 12px; }
+    .sync-form label { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
+    .sync-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .settings-row:last-child { border-bottom: 0; }
+    .range { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(86px + var(--safe-bottom));
+      transform: translateX(-50%) translateY(20px);
+      background: #eee;
+      color: #111;
+      border-radius: 999px;
+      padding: 11px 16px;
+      font-weight: 750;
+      opacity: 0;
+      pointer-events: none;
+      transition: all .18s ease;
+      z-index: 120;
+      max-width: calc(100% - 32px);
+      text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (min-width: 700px) {
+      body { background: radial-gradient(circle at top, #1d1d1d, #0d0d0d); }
+      .app { padding-top: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="top">
+      <div class="title" id="pageTitle">Log</div>
+      <div class="sync-chip" id="syncChip">local</div>
+    </header>
+
+    <section id="logScreen" class="screen active"></section>
+    <section id="calendarScreen" class="screen"></section>
+    <section id="summaryScreen" class="screen"></section>
+    <section id="settingsScreen" class="screen"></section>
+  </main>
+
+  <nav class="nav">
+    <button data-nav="log" class="active">Log</button>
+    <button data-nav="calendar">Calendar</button>
+    <button data-nav="summary">Summary</button>
+    <button data-nav="settings">Settings</button>
+  </nav>
+
+  <div id="sheetBackdrop" class="sheet-backdrop"></div>
+  <div id="sheet" class="sheet"></div>
+  <div id="toast" class="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const STORAGE_KEY = 'discreet_tracker_entries_v1';
+    const SETTINGS_KEY = 'discreet_tracker_settings_v1';
+
+    let entries = loadEntries();
+    let settings = loadSettings();
+    let activeTab = 'log';
+    let viewedMonth = new Date();
+    let editingEntryId = null;
+
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+    function uuid() {
+      if (crypto && crypto.randomUUID) return crypto.randomUUID();
+      return 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+    }
+
+    function loadEntries() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+      catch { return []; }
+    }
+    function loadSettings() {
+      try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); }
+      catch { return {}; }
+    }
+    function saveSettings() {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    }
+    function getSupabaseClient() {
+      if (!settings.supabaseUrl || !settings.supabaseAnonKey || !window.supabase) return null;
+      return window.supabase.createClient(settings.supabaseUrl, settings.supabaseAnonKey);
+    }
+    function saveEntries() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+      updateSyncChip();
+    }
+    function updateSyncChip() {
+      const pending = entries.filter(e => e.sync_status === 'pending').length;
+      const connected = !!(settings.supabaseUrl && settings.supabaseAnonKey);
+      $('#syncChip').textContent = pending ? `${pending} pending` : (connected ? 'cloud ready' : 'local');
+    }
+
+    function nowIso() { return new Date().toISOString(); }
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function toLocalInputValue(d) {
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+    function dateOnlyLocal(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+    function formatTime(d) {
+      return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    }
+    function formatDate(d) {
+      return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    function startOfTrackingDay(date = new Date()) {
+      const d = new Date(date);
+      const start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 4, 0, 0, 0);
+      if (d < start) start.setDate(start.getDate() - 1);
+      return start;
+    }
+    function endOfTrackingDay(date = new Date()) {
+      const s = startOfTrackingDay(date);
+      const e = new Date(s);
+      e.setDate(e.getDate() + 1);
+      return e;
+    }
+    function isInTrackingDay(iso, baseDate) {
+      const d = new Date(iso);
+      const s = startOfTrackingDay(baseDate);
+      const e = endOfTrackingDay(baseDate);
+      return d >= s && d < e;
+    }
+    function visibleEntries() { return entries.filter(e => !e.deleted_at); }
+    function entriesOfType(type) { return visibleEntries().filter(e => e.type === type); }
+    function latestEntry(type) {
+      return entriesOfType(type).sort((a,b) => new Date(b.event_at) - new Date(a.event_at))[0] || null;
+    }
+    function formatSince(type) {
+      const last = latestEntry(type);
+      if (!last) return '—';
+      const hours = (Date.now() - new Date(last.event_at).getTime()) / 36e5;
+      if (hours < 24) return `${Math.max(0, hours).toFixed(1)}h`;
+      return `${Math.max(0, hours / 24).toFixed(1)}d`;
+    }
+    function oneCountToday() {
+      return entriesOfType('one').filter(e => isInTrackingDay(e.event_at, new Date())).length;
+    }
+    function feelingStatusToday() {
+      return entriesOfType('feeling').some(e => isInTrackingDay(e.event_at, new Date())) ? 'logged' : 'not yet logged';
+    }
+    function typeLabel(t) {
+      return ({ one: 'One', two: 'Two', three: 'Three', feeling: 'Feeling' })[t] || t;
+    }
+    function describeEntry(e) {
+      const bits = [];
+      if (e.type === 'one') {
+        if (e.one_urgent) bits.push('urgent');
+        if (e.one_uncomfortable) bits.push('uncomfortable');
+        if (e.one_volume_low) bits.push('low');
+        if (e.one_volume_standard) bits.push('standard');
+        if (e.one_volume_high) bits.push('high');
+      }
+      if (e.type === 'two') {
+        if (e.two_urgent) bits.push('urgent');
+        if (e.two_uncomfortable) bits.push('uncomfortable');
+        if (e.two_solid) bits.push('solid');
+        if (e.two_loose) bits.push('loose');
+        if (e.two_liquid) bits.push('liquid');
+      }
+      if (e.type === 'feeling' && e.feeling_rating) bits.push(e.feeling_rating.replace('_', ' '));
+      if (e.notes) bits.push(`“${e.notes}”`);
+      return bits.join(' · ') || 'No details';
+    }
+
+    function render() {
+      updateSyncChip();
+      $$('.screen').forEach(s => s.classList.remove('active'));
+      $(`#${activeTab}Screen`).classList.add('active');
+      $$('.nav button').forEach(b => b.classList.toggle('active', b.dataset.nav === activeTab));
+      $('#pageTitle').textContent = ({ log: 'Log', calendar: 'Calendar', summary: 'Summary', settings: 'Settings' })[activeTab];
+      renderLog(); renderCalendar(); renderSummary(); renderSettings();
+    }
+
+    function rewindSvg() {
+      return `<svg class="rewind-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <path d="M25 9a15 15 0 1 1-13.3 8" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/>
+        <path d="M9 13v9h9" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="25" cy="24" r="7" stroke="currentColor" stroke-width="3.2"/>
+        <path d="M25 20v5l4 2" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/>
+      </svg>`;
+    }
+
+    function trackerCard(type, cardClass, counterText, full = false) {
+      if (full) {
+        return `<div class="counter">${counterText}</div>
+          <div class="tracker-card full ${cardClass}">
+            <button class="track-part fullbtn" onclick="openEntrySheet('${type}', new Date(), false)"><span class="track-now-label">Track now</span></button>
+          </div>`;
+      }
+      return `<div class="counter">${counterText}</div>
+        <div class="tracker-card ${cardClass}">
+          <button class="track-part left" aria-label="Log previous" onclick="openBackdateSheet('${type}')">${rewindSvg()}</button>
+          <button class="track-part right" aria-label="Track now" onclick="openEntrySheet('${type}', new Date(), false)"><span class="track-now-label">Track now</span></button>
+        </div>`;
+    }
+
+    function renderLog() {
+      $('#logScreen').innerHTML = `
+        ${trackerCard('one', 'card-one', `${formatSince('one')} (${oneCountToday()})`)}
+        ${trackerCard('two', 'card-two', formatSince('two'))}
+        ${trackerCard('three', 'card-three', formatSince('three'))}
+        ${trackerCard('feeling', 'card-feeling', feelingStatusToday(), true)}
+      `;
+    }
+
+    function openSheet(html) {
+      $('#sheet').innerHTML = `<div class="sheet-handle"></div>${html}`;
+      $('#sheetBackdrop').classList.add('show');
+      $('#sheet').classList.add('show');
+    }
+    function closeSheet() {
+      $('#sheetBackdrop').classList.remove('show');
+      $('#sheet').classList.remove('show');
+      editingEntryId = null;
+    }
+    $('#sheetBackdrop').addEventListener('click', closeSheet);
+
+    function openBackdateSheet(type) {
+      const today = new Date();
+      const yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
+      const defaultTime = `${pad(today.getHours())}:${pad(today.getMinutes())}`;
+      openSheet(`
+        <div class="sheet-head"><div class="sheet-title">Log previous</div><button class="icon-btn" onclick="closeSheet()">×</button></div>
+        <div class="section-label">Day</div>
+        <div class="two-col">
+          <button class="pill selected" id="dayToday" onclick="selectBackdateDay('today')">Today</button>
+          <button class="pill" id="dayYesterday" onclick="selectBackdateDay('yesterday')">Yesterday</button>
+        </div>
+        <div class="section-label">Time</div>
+        <input id="backTime" type="time" value="${defaultTime}">
+        <button class="save-btn" onclick="continueBackdate('${type}')">Continue</button>
+      `);
+      window.backdateDay = 'today';
+    }
+    function selectBackdateDay(day) {
+      window.backdateDay = day;
+      $('#dayToday').classList.toggle('selected', day === 'today');
+      $('#dayYesterday').classList.toggle('selected', day === 'yesterday');
+    }
+    function continueBackdate(type) {
+      const base = new Date();
+      if (window.backdateDay === 'yesterday') base.setDate(base.getDate() - 1);
+      const [h,m] = ($('#backTime').value || '12:00').split(':').map(Number);
+      base.setHours(h || 0, m || 0, 0, 0);
+      openEntrySheet(type, base, true);
+    }
+
+    function togglePill(btn) { btn.classList.toggle('selected'); }
+    function selected(id) { const el = $('#' + id); return !!el && el.classList.contains('selected'); }
+
+    function pill(id, label, active=false) {
+      return `<button id="${id}" class="pill ${active ? 'selected' : ''}" onclick="togglePill(this)">${label}</button>`;
+    }
+
+    function openEntrySheet(type, eventDate, isBackdated, entry = null) {
+      editingEntryId = entry ? entry.id : null;
+      const title = entry ? `Edit ${typeLabel(type)}` : typeLabel(type);
+      const notes = entry?.notes || '';
+      const eventIso = eventDate.toISOString();
+      let body = '';
+      if (type === 'one') {
+        body = `
+          <div class="section-label">Urgency</div>
+          <div class="pill-grid">
+            ${pill('one_urgent', 'Urgent', entry?.one_urgent)}
+            ${pill('one_uncomfortable', 'Uncomfortable', entry?.one_uncomfortable)}
+          </div>
+          <div class="section-label">Volume</div>
+          <div class="pill-grid">
+            ${pill('one_volume_low', 'Low', entry?.one_volume_low)}
+            ${pill('one_volume_standard', 'Standard', entry?.one_volume_standard)}
+            ${pill('one_volume_high', 'High', entry?.one_volume_high)}
+          </div>`;
+      } else if (type === 'two') {
+        body = `
+          <div class="section-label">Urgency</div>
+          <div class="pill-grid">
+            ${pill('two_urgent', 'Urgent', entry?.two_urgent)}
+            ${pill('two_uncomfortable', 'Uncomfortable', entry?.two_uncomfortable)}
+          </div>
+          <div class="section-label">Consistency</div>
+          <div class="pill-grid">
+            ${pill('two_solid', 'Solid', entry?.two_solid)}
+            ${pill('two_loose', 'Loose', entry?.two_loose)}
+            ${pill('two_liquid', 'Liquid', entry?.two_liquid)}
+          </div>`;
+      } else if (type === 'feeling') {
+        const val = entry?.feeling_rating || '';
+        body = `
+          <div class="section-label">Feeling</div>
+          <div class="pill-grid" id="feelingGrid">
+            <button data-feeling="real_bad" class="pill ${val==='real_bad'?'selected':''}" onclick="selectFeeling(this)">Real bad</button>
+            <button data-feeling="somewhat_bad" class="pill ${val==='somewhat_bad'?'selected':''}" onclick="selectFeeling(this)">Somewhat bad</button>
+            <button data-feeling="good" class="pill ${val==='good'?'selected':''}" onclick="selectFeeling(this)">Good</button>
+            <button data-feeling="great" class="pill ${val==='great'?'selected':''}" onclick="selectFeeling(this)">Great</button>
+          </div>`;
+      }
+      openSheet(`
+        <div class="sheet-head"><div><div class="sheet-title">${title}</div><div class="small">${formatDate(eventDate)} · ${formatTime(eventDate)}</div></div><button class="icon-btn" onclick="closeSheet()">×</button></div>
+        ${body}
+        <div class="section-label">Notes</div>
+        <textarea id="entryNotes" placeholder="Optional notes">${escapeHtml(notes)}</textarea>
+        <button class="save-btn" onclick="saveEntry('${type}', '${eventIso}', ${isBackdated})">Save Entry</button>
+        ${entry ? '<button class="danger-btn" onclick="deleteEntry(editingEntryId)">Delete Entry</button>' : ''}
+      `);
+    }
+    function selectFeeling(btn) {
+      $$('#feelingGrid .pill').forEach(p => p.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    function blankEntryFields() {
+      return {
+        one_urgent: false, one_uncomfortable: false, one_volume_low: false, one_volume_standard: false, one_volume_high: false,
+        two_urgent: false, two_uncomfortable: false, two_solid: false, two_loose: false, two_liquid: false,
+        feeling_rating: null
+      };
+    }
+    function saveEntry(type, eventIso, isBackdated) {
+      const now = nowIso();
+      const base = {
+        ...(editingEntryId ? entries.find(e => e.id === editingEntryId) : {}),
+        ...blankEntryFields(),
+        id: editingEntryId || uuid(),
+        type,
+        event_at: eventIso,
+        created_at: editingEntryId ? entries.find(e => e.id === editingEntryId).created_at : now,
+        updated_at: now,
+        is_backdated: !!isBackdated,
+        notes: $('#entryNotes')?.value || '',
+        sync_status: 'pending',
+        deleted_at: null
+      };
+      if (type === 'one') {
+        base.one_urgent = selected('one_urgent');
+        base.one_uncomfortable = selected('one_uncomfortable');
+        base.one_volume_low = selected('one_volume_low');
+        base.one_volume_standard = selected('one_volume_standard');
+        base.one_volume_high = selected('one_volume_high');
+      }
+      if (type === 'two') {
+        base.two_urgent = selected('two_urgent');
+        base.two_uncomfortable = selected('two_uncomfortable');
+        base.two_solid = selected('two_solid');
+        base.two_loose = selected('two_loose');
+        base.two_liquid = selected('two_liquid');
+      }
+      if (type === 'feeling') {
+        const chosen = $('#feelingGrid .pill.selected');
+        base.feeling_rating = chosen ? chosen.dataset.feeling : null;
+      }
+      if (editingEntryId) entries = entries.map(e => e.id === editingEntryId ? base : e);
+      else entries.push(base);
+      saveEntries(); closeSheet(); render(); toast('Saved'); autoBackupPending();
+    }
+    function deleteEntry(id) {
+      if (!id) return;
+      if (!confirm('Delete this entry?')) return;
+      const now = nowIso();
+      entries = entries.map(e => e.id === id ? { ...e, deleted_at: now, updated_at: now, sync_status: 'pending' } : e);
+      saveEntries(); closeSheet(); render(); toast('Deleted'); autoBackupPending();
+    }
+
+    function renderCalendar() {
+      const y = viewedMonth.getFullYear();
+      const m = viewedMonth.getMonth();
+      const first = new Date(y, m, 1);
+      const daysInMonth = new Date(y, m + 1, 0).getDate();
+      const startOffset = first.getDay();
+      const monthName = viewedMonth.toLocaleDateString([], { month: 'long', year: 'numeric' });
+      let cells = '';
+      for (let i=0; i<startOffset; i++) cells += `<div class="day empty"></div>`;
+      for (let d=1; d<=daysInMonth; d++) {
+        const date = new Date(y, m, d, 12, 0, 0);
+        const count = entriesOfType('one').filter(e => isInTrackingDay(e.event_at, date)).length;
+        cells += `<button class="day" onclick="openDayDetail('${date.toISOString()}')">
+          <span class="date-num">${d}</span>
+          ${count ? `<span class="badge ${badgeClass(count)}">${count}</span>` : ''}
+        </button>`;
+      }
+      $('#calendarScreen').innerHTML = `
+        <div class="month-head">
+          <div class="month-title">${monthName}</div>
+          <div class="arrow-row"><button onclick="changeMonth(-1)">‹</button><button onclick="changeMonth(1)">›</button></div>
+        </div>
+        <div class="dow"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>
+        <div class="calendar-grid">${cells}</div>
+        <div class="legend">
+          <div class="legend-item low-key">1–3</div><div class="legend-item mid-key">4–6</div><div class="legend-item high-key">7–8</div><div class="legend-item max-key">9+</div>
+        </div>`;
+    }
+    function badgeClass(count) { return count <= 3 ? 'low' : count <= 6 ? 'mid' : count <= 8 ? 'high' : 'max'; }
+    function changeMonth(delta) { viewedMonth = new Date(viewedMonth.getFullYear(), viewedMonth.getMonth() + delta, 1); renderCalendar(); }
+
+    function openDayDetail(iso) {
+      const base = new Date(iso);
+      const dayEntries = visibleEntries().filter(e => isInTrackingDay(e.event_at, base)).sort((a,b)=> new Date(a.event_at)-new Date(b.event_at));
+      const rows = dayEntries.length ? dayEntries.map(e => entryRow(e)).join('') : `<div class="small">No entries for this day.</div>`;
+      openSheet(`
+        <div class="sheet-head"><div><div class="sheet-title">${formatDate(base)}</div><div class="small">4:00 AM day boundary</div></div><button class="icon-btn" onclick="closeSheet()">×</button></div>
+        <div class="list">${rows}</div>
+      `);
+    }
+    function entryRow(e) {
+      return `<div class="entry-row type-${e.type}">
+        <div class="entry-main"><div class="entry-title">${formatTime(new Date(e.event_at))} · ${typeLabel(e.type)}</div><div class="entry-sub">${escapeHtml(describeEntry(e))}</div></div>
+        <div class="row-actions"><button class="mini-btn" onclick="editEntry('${e.id}')">Edit</button><button class="mini-btn danger" onclick="deleteEntry('${e.id}')">Delete</button></div>
+      </div>`;
+    }
+    function editEntry(id) {
+      const e = entries.find(x => x.id === id); if (!e) return;
+      openEntrySheet(e.type, new Date(e.event_at), e.is_backdated, e);
+    }
+
+    function renderSummary() {
+      const one = entriesOfType('one').sort((a,b)=> new Date(a.event_at)-new Date(b.event_at));
+      const sevenAgo = new Date(); sevenAgo.setDate(sevenAgo.getDate()-7);
+      const one7 = one.filter(e => new Date(e.event_at) >= sevenAgo);
+      const countsByDay = [];
+      for (let i=6;i>=0;i--) {
+        const d = new Date(); d.setDate(d.getDate()-i);
+        countsByDay.push(one.filter(e => isInTrackingDay(e.event_at, d)).length);
+      }
+      const avgCount = countsByDay.reduce((a,b)=>a+b,0) / 7;
+      const intervals = getIntervals(one7);
+      const avgInterval = intervals.length ? intervals.reduce((a,b)=>a+b,0)/intervals.length : null;
+      const longest = intervals.length ? Math.max(...intervals) : null;
+      const recentIntervals = getIntervals(one).slice(-10).reverse();
+      $('#summaryScreen').innerHTML = `
+        <div class="stat-grid">
+          <div class="stat"><div class="value">${oneCountToday()}</div><div class="label">today</div></div>
+          <div class="stat"><div class="value">${avgCount.toFixed(1)}</div><div class="label">7-day average</div></div>
+          <div class="stat"><div class="value">${avgInterval ? avgInterval.toFixed(1)+'h' : '—'}</div><div class="label">avg gap, 7 days</div></div>
+          <div class="stat"><div class="value">${longest ? longest.toFixed(1)+'h' : '—'}</div><div class="label">longest gap, 7 days</div></div>
+        </div>
+        <div class="panel"><h3>Recent intervals</h3><div class="list">
+          ${recentIntervals.length ? recentIntervals.map((h,i)=>`<div class="entry-row"><div class="entry-main"><div class="entry-title">${h.toFixed(1)}h</div><div class="entry-sub">interval ${i+1}</div></div></div>`).join('') : '<div class="small">Not enough entries yet.</div>'}
+        </div></div>
+        <div class="panel"><h3>Other counts</h3><div class="small">Two: ${entriesOfType('two').length} total · Three: ${entriesOfType('three').length} total · Feeling: ${entriesOfType('feeling').length} total</div></div>
+      `;
+    }
+    function getIntervals(sortedEntries) {
+      const sorted = [...sortedEntries].sort((a,b)=> new Date(a.event_at)-new Date(b.event_at));
+      const out = [];
+      for (let i=1; i<sorted.length; i++) out.push((new Date(sorted[i].event_at) - new Date(sorted[i-1].event_at))/36e5);
+      return out.filter(h => h >= 0);
+    }
+
+    function renderSettings() {
+      const hasConfig = !!(settings.supabaseUrl && settings.supabaseAnonKey);
+      const lastSync = settings.lastSyncAt ? new Date(settings.lastSyncAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'never';
+      $('#settingsScreen').innerHTML = `
+        <div class="panel">
+          <h2>Export</h2>
+          <button class="save-btn" onclick="exportCsv()">Export All CSV</button>
+          <div class="range"><input id="rangeStart" type="date"><input id="rangeEnd" type="date"></div>
+          <button class="secondary-btn" onclick="exportCsv(true)">Export Date Range</button>
+        </div>
+        <div class="panel">
+          <h2>Cloud backup</h2>
+          <div class="settings-row"><div><strong>Status</strong><div class="small">${hasConfig ? 'Supabase configured' : 'Paste your Supabase Project URL and anon public key.'}</div></div><span class="small">${hasConfig ? 'ready' : 'not connected'}</span></div>
+          <div class="settings-row"><div><strong>Last sync</strong><div class="small">${lastSync}</div></div></div>
+          <div class="sync-form">
+            <label>Project URL</label>
+            <input id="supabaseUrl" placeholder="https://your-project.supabase.co" value="${escapeHtml(settings.supabaseUrl || '')}">
+            <label>Anon public key</label>
+            <textarea id="supabaseAnonKey" placeholder="Paste anon public key">${escapeHtml(settings.supabaseAnonKey || '')}</textarea>
+            <button class="secondary-btn" onclick="saveCloudSettings()">Save Cloud Settings</button>
+            <label>Email</label>
+            <input id="syncEmail" type="email" autocomplete="email" placeholder="you@example.com" value="${escapeHtml(settings.syncEmail || '')}">
+            <label>Password</label>
+            <input id="syncPassword" type="password" autocomplete="current-password" placeholder="Password">
+            <div class="sync-actions">
+              <button class="secondary-btn" onclick="signUpCloud()">Sign Up</button>
+              <button class="secondary-btn" onclick="signInCloud()">Sign In</button>
+            </div>
+            <button class="save-btn" onclick="backupNow()">Backup Now</button>
+            <button class="secondary-btn" onclick="downloadFromCloud()">Download/Merge From Cloud</button>
+            <button class="danger-btn" onclick="signOutCloud()">Sign Out</button>
+          </div>
+          <div class="small" style="margin-top:12px;">Backup saves active and deleted entries so deletes can sync too. Data still saves locally first.</div>
+        </div>
+        <div class="panel">
+          <h2>Data</h2>
+          <div class="settings-row"><div><strong>Entries</strong><div class="small">${visibleEntries().length} active, ${entries.filter(e=>e.deleted_at).length} deleted</div></div></div>
+          <button class="secondary-btn" onclick="seedDemoData()">Add Demo Data</button>
+          <button class="danger-btn" onclick="clearAllData()">Clear All Local Data</button>
+        </div>
+        <div class="panel"><h2>About</h2><div class="small">Single-file local web app. Add this page to your iPhone Home Screen from Safari for app-like use.</div></div>
+      `;
+    }
+
+    function saveCloudSettings() {
+      settings.supabaseUrl = $('#supabaseUrl').value.trim();
+      settings.supabaseAnonKey = $('#supabaseAnonKey').value.trim();
+      settings.syncEmail = $('#syncEmail')?.value.trim() || settings.syncEmail || '';
+      saveSettings(); updateSyncChip(); renderSettings(); toast('Cloud settings saved');
+    }
+    async function requireSupabase() {
+      const client = getSupabaseClient();
+      if (!client) { toast('Add Supabase settings first'); return null; }
+      return client;
+    }
+    function readLoginFields() {
+      settings.syncEmail = $('#syncEmail')?.value.trim() || settings.syncEmail || '';
+      saveSettings();
+      return { email: settings.syncEmail, password: $('#syncPassword')?.value || '' };
+    }
+    async function signUpCloud() {
+      saveCloudSettings();
+      const client = await requireSupabase(); if (!client) return;
+      const { email, password } = readLoginFields();
+      if (!email || !password) { toast('Enter email and password'); return; }
+      const { error } = await client.auth.signUp({ email, password });
+      if (error) toast(error.message); else toast('Sign-up sent/successful');
+    }
+    async function signInCloud() {
+      saveCloudSettings();
+      const client = await requireSupabase(); if (!client) return;
+      const { email, password } = readLoginFields();
+      if (!email || !password) { toast('Enter email and password'); return; }
+      const { error } = await client.auth.signInWithPassword({ email, password });
+      if (error) toast(error.message); else { toast('Signed in'); await backupNow(); }
+    }
+    async function signOutCloud() {
+      const client = await requireSupabase(); if (!client) return;
+      await client.auth.signOut(); toast('Signed out');
+    }
+    function cloudPayload(entry, userId) {
+      return {
+        id: entry.id,
+        user_id: userId,
+        type: entry.type,
+        event_at: entry.event_at,
+        created_at: entry.created_at,
+        updated_at: entry.updated_at,
+        is_backdated: !!entry.is_backdated,
+        notes: entry.notes || '',
+        one_urgent: !!entry.one_urgent,
+        one_uncomfortable: !!entry.one_uncomfortable,
+        one_volume_low: !!entry.one_volume_low,
+        one_volume_standard: !!entry.one_volume_standard,
+        one_volume_high: !!entry.one_volume_high,
+        two_urgent: !!entry.two_urgent,
+        two_uncomfortable: !!entry.two_uncomfortable,
+        two_solid: !!entry.two_solid,
+        two_loose: !!entry.two_loose,
+        two_liquid: !!entry.two_liquid,
+        feeling_rating: entry.feeling_rating || null,
+        sync_status: 'synced',
+        deleted_at: entry.deleted_at || null
+      };
+    }
+    async function getCloudUser(client) {
+      const { data, error } = await client.auth.getUser();
+      if (error || !data?.user) { toast('Sign in first'); return null; }
+      return data.user;
+    }
+    async function backupNow() {
+      const client = await requireSupabase(); if (!client) return;
+      const user = await getCloudUser(client); if (!user) return;
+      if (!entries.length) { toast('No local entries to backup'); return; }
+      const payload = entries.map(e => cloudPayload(e, user.id));
+      const { error } = await client.from('entries').upsert(payload, { onConflict: 'id' });
+      if (error) { toast(error.message); return; }
+      entries = entries.map(e => ({ ...e, sync_status: 'synced' }));
+      settings.lastSyncAt = nowIso(); saveSettings(); saveEntries(); render(); toast('Backup complete');
+    }
+    async function autoBackupPending() {
+      const pending = entries.some(e => e.sync_status === 'pending');
+      if (!pending || !settings.supabaseUrl || !settings.supabaseAnonKey || !navigator.onLine) return;
+      try { await backupNow(); } catch (e) { console.warn(e); }
+    }
+    async function downloadFromCloud() {
+      const client = await requireSupabase(); if (!client) return;
+      const user = await getCloudUser(client); if (!user) return;
+      const { data, error } = await client.from('entries').select('*').eq('user_id', user.id);
+      if (error) { toast(error.message); return; }
+      const byId = new Map(entries.map(e => [e.id, e]));
+      for (const remote of (data || [])) {
+        const local = byId.get(remote.id);
+        if (!local || new Date(remote.updated_at) > new Date(local.updated_at || 0)) {
+          byId.set(remote.id, { ...blankEntryFields(), ...remote, sync_status: 'synced' });
+        }
+      }
+      entries = Array.from(byId.values());
+      settings.lastSyncAt = nowIso(); saveSettings(); saveEntries(); render(); toast('Cloud data merged');
+    }
+
+    function csvEscape(value) {
+      if (value === null || value === undefined) return '';
+      const s = String(value);
+      if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    }
+    function exportCsv(range=false) {
+      let data = visibleEntries().sort((a,b)=> new Date(a.event_at)-new Date(b.event_at));
+      if (range) {
+        const startVal = $('#rangeStart').value;
+        const endVal = $('#rangeEnd').value;
+        if (startVal) {
+          const s = new Date(startVal + 'T00:00:00');
+          data = data.filter(e => new Date(e.event_at) >= s);
+        }
+        if (endVal) {
+          const e = new Date(endVal + 'T23:59:59');
+          data = data.filter(x => new Date(x.event_at) <= e);
+        }
+      }
+      const cols = ['id','type','event_at','created_at','updated_at','is_backdated','notes','one_urgent','one_uncomfortable','one_volume_low','one_volume_standard','one_volume_high','two_urgent','two_uncomfortable','two_solid','two_loose','two_liquid','feeling_rating','sync_status','deleted_at'];
+      const csv = [cols.join(',')].concat(data.map(row => cols.map(c => csvEscape(row[c])).join(','))).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `tracker_export_${dateOnlyLocal(new Date())}.csv`;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      toast('CSV exported');
+    }
+
+    function seedDemoData() {
+      const now = new Date();
+      const demo = [];
+      for (let i=0;i<24;i++) {
+        const d = new Date(now); d.setDate(now.getDate() - Math.floor(i/3)); d.setHours(7 + (i%5)*3, Math.floor(Math.random()*50), 0, 0);
+        demo.push({ ...blankEntryFields(), id: uuid(), type: 'one', event_at: d.toISOString(), created_at: nowIso(), updated_at: nowIso(), is_backdated: false, notes: '', one_volume_standard: true, sync_status: 'pending', deleted_at: null });
+      }
+      entries.push(...demo); saveEntries(); render(); toast('Demo data added');
+    }
+    function clearAllData() {
+      if (!confirm('Clear all local data?')) return;
+      entries = []; saveEntries(); render(); toast('Cleared');
+    }
+    function toast(msg) {
+      const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+      setTimeout(()=>t.classList.remove('show'), 1700);
+    }
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+    }
+
+    window.addEventListener('online', autoBackupPending);
+
+    $$('.nav button').forEach(btn => btn.addEventListener('click', () => { activeTab = btn.dataset.nav; render(); }));
+
+    // Lightweight offline-friendly behavior: this single file runs without internet once opened/saved.
+    // True PWA install/service worker needs separate hosted files or a generated blob worker, so cloud/PWA sync is intentionally scaffolded.
+    render();
+  </script>
+</body>
+</html>
