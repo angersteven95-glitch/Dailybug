@@ -1,0 +1,2052 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111111" />
+  <title>Log</title>
+  <style>
+    :root {
+      --bg: #101010;
+      --panel: #171717;
+      --panel-2: #202020;
+      --panel-3: #292929;
+      --text: #eeeeee;
+      --muted: #a7a7a7;
+      --faint: #6f6f6f;
+      --line: #333333;
+      --accent: #c17f32;
+      --accent-2: #e4a85b;
+      --green: #4f8f5b;
+      --orange: #b66d2f;
+      --red: #a84444;
+      --one: #80683d;
+      --one-soft: #5b4b31;
+      --two: #5a4a3f;
+      --two-soft: #453a33;
+      --three: #bfc2c4;
+      --three-soft: #74787b;
+      --food: #7f9a77;
+      --food-soft: #556b50;
+      --feeling: #343434;
+      --radius: 22px;
+      --shadow: 0 14px 35px rgba(0,0,0,.35);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; border: 0; }
+    textarea, input, select {
+      width: 100%;
+      background: var(--input-bg, #111);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      outline: none;
+    }
+    textarea { min-height: 110px; resize: vertical; }
+
+    .app {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 18px 16px calc(90px + var(--safe-bottom));
+    }
+
+    header.top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 2px 18px;
+    }
+    .title { font-size: 30px; font-weight: 750; letter-spacing: -0.04em; }
+    .sync-chip {
+      color: var(--muted);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 12px;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .counter {
+      color: var(--muted);
+      font-size: 14px;
+      margin: 14px 8px 8px;
+      letter-spacing: .01em;
+    }
+
+    .tracker-card {
+      height: 98px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,.06);
+      margin-bottom: 10px;
+    }
+    .tracker-card.full { grid-template-columns: 1fr; }
+    .track-part {
+      min-width: 0;
+      color: rgba(255,255,255,.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: filter .12s ease, transform .12s ease;
+    }
+    .track-part:active { filter: brightness(1.18); transform: scale(.992); }
+    .track-part.left { border-right: 1px solid rgba(255,255,255,.16); }
+    .track-part.right::after, .track-part.fullbtn::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,0));
+      pointer-events: none;
+    }
+    .card-one .left { background: var(--one-soft); }
+    .card-one .right { background: var(--one); }
+    .card-two .left { background: var(--two-soft); }
+    .card-two .right { background: var(--two); }
+    .card-three .left { background: var(--three-soft); color: #111; }
+    .card-three .right { background: var(--three); color: #111; }
+    .card-food .left { background: var(--food-soft); }
+    .card-food .right { background: var(--food); color: #101010; }
+    .card-feeling .fullbtn { background: var(--feeling); }
+
+    .rewind-icon { width: 34px; height: 34px; opacity: .88; }
+    .track-now-label { font-size: 13px; font-weight: 700; opacity: .34; letter-spacing: .08em; text-transform: uppercase; }
+
+    .nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 520px;
+      padding: 10px 12px calc(10px + var(--safe-bottom));
+      background: linear-gradient(to top, rgba(16,16,16,.98), rgba(16,16,16,.86));
+      backdrop-filter: blur(14px);
+      border-top: 1px solid rgba(255,255,255,.06);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      z-index: 50;
+    }
+    .nav button {
+      color: var(--muted);
+      background: transparent;
+      border-radius: 16px;
+      padding: 10px 5px;
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .nav button.active { color: #111; background: var(--accent-2); }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      margin: 12px 0;
+    }
+    .panel h2, .panel h3 { margin: 0 0 12px; letter-spacing: -0.02em; }
+    .panel h2 { font-size: 22px; }
+    .panel h3 { font-size: 17px; color: #e7e7e7; }
+    .small { color: var(--muted); font-size: 13px; line-height: 1.4; }
+
+    .sheet-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.58);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .16s ease;
+      z-index: 80;
+    }
+    .sheet-backdrop.show { opacity: 1; pointer-events: auto; }
+    .sheet {
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      transform: translate(-50%, 110%);
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow: auto;
+      background: #171717;
+      border-radius: 28px 28px 0 0;
+      border: 1px solid var(--line);
+      padding: 12px 16px calc(18px + var(--safe-bottom));
+      z-index: 90;
+      transition: transform .2s ease;
+      box-shadow: 0 -20px 60px rgba(0,0,0,.55);
+    }
+    .sheet.show { transform: translate(-50%, 0); }
+    .sheet-handle { width: 48px; height: 5px; border-radius: 99px; background: #4a4a4a; margin: 2px auto 16px; }
+    .sheet-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; margin-bottom: 12px; }
+    .sheet-title { font-size: 24px; font-weight: 750; letter-spacing: -0.03em; }
+    .icon-btn {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      width: 42px;
+      height: 42px;
+      font-size: 20px;
+    }
+    .section-label { color: var(--muted); margin: 18px 0 10px 2px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+    .pill-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+    .pill {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 12px 15px;
+      font-size: 15px;
+      font-weight: 650;
+    }
+    .pill.selected { background: var(--accent-2); color: #111; border-color: var(--accent-2); }
+
+    .feeling-scale {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .face-btn {
+      height: 58px;
+      border-radius: 18px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    }
+    .face-btn:active { transform: scale(.96); }
+    .face-btn svg { width: 34px; height: 34px; stroke-width: 2.35; fill: none; }
+    .face-btn.selected { background: rgba(255,255,255,.08); transform: scale(1.04); }
+    .face-btn.selected svg { stroke-width: 2.9; }
+    .face-red { color: #b84b4b; }
+    .face-orange { color: #c47a36; }
+    .face-yellow { color: #c9a84b; }
+    .face-pale-green { color: #9dbc73; }
+    .face-green { color: #5fa66a; }
+    .face-red.selected { border-color: #b84b4b; box-shadow: 0 0 0 2px rgba(184,75,75,.16); }
+    .face-orange.selected { border-color: #c47a36; box-shadow: 0 0 0 2px rgba(196,122,54,.16); }
+    .face-yellow.selected { border-color: #c9a84b; box-shadow: 0 0 0 2px rgba(201,168,75,.16); }
+    .face-pale-green.selected { border-color: #9dbc73; box-shadow: 0 0 0 2px rgba(157,188,115,.16); }
+    .face-green.selected { border-color: #5fa66a; box-shadow: 0 0 0 2px rgba(95,166,106,.16); }
+
+    .face-btn svg, .feeling-face svg { overflow: visible; }
+    .feeling-face {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      position: relative;
+      flex: 0 0 auto;
+    }
+    .feeling-face svg { width: 34px; height: 34px; stroke-width: 2.8; fill: none; }
+    .feeling-face.small { width: 28px; height: 28px; }
+    .feeling-face.small svg { width: 28px; height: 28px; stroke-width: 2.6; }
+    .feeling-face.large { width: 42px; height: 42px; }
+    .feeling-face.large svg { width: 42px; height: 42px; stroke-width: 2.9; }
+    .feeling-split {
+      width: 34px;
+      height: 34px;
+      display: inline-grid;
+      grid-template-columns: 1fr 1fr;
+      overflow: hidden;
+      border-radius: 999px;
+      vertical-align: middle;
+      flex: 0 0 auto;
+    }
+    .feeling-split .half {
+      width: 17px;
+      height: 34px;
+      overflow: hidden;
+      position: relative;
+    }
+    .feeling-split .half svg { width: 34px; height: 34px; stroke-width: 2.8; fill: none; }
+    .feeling-split .right svg { transform: translateX(-17px); }
+    .feeling-split.small { width: 28px; height: 28px; }
+    .feeling-split.small .half { width: 14px; height: 28px; }
+    .feeling-split.small .half svg { width: 28px; height: 28px; stroke-width: 2.6; }
+    .feeling-split.small .right svg { transform: translateX(-14px); }
+    .feeling-day-badge {
+      margin: auto auto 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+    }
+    .calendar-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 10px 0 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 4px;
+    }
+    .calendar-toggle button {
+      background: transparent;
+      color: var(--muted);
+      border-radius: 12px;
+      padding: 10px;
+      font-weight: 850;
+      font-size: 13px;
+    }
+    .calendar-toggle button.active { background: var(--panel-3); color: var(--text); }
+    .day-title-row { display: flex; align-items: center; gap: 10px; }
+    .save-btn, .secondary-btn, .danger-btn {
+      width: 100%;
+      border-radius: 18px;
+      padding: 15px;
+      font-weight: 800;
+      margin-top: 16px;
+    }
+    .save-btn { background: var(--accent-2); color: #111; }
+    .secondary-btn { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); }
+    .danger-btn { background: rgba(168,68,68,.18); color: #ffb3b3; border: 1px solid rgba(168,68,68,.45); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .month-head { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px; margin: 8px 0 12px; }
+    .month-title { font-size: 22px; font-weight: 750; letter-spacing: -0.03em; background: transparent; color: var(--text); border: 0; padding: 8px 0; text-align: left; min-width: 0; }
+    .month-title:active { opacity: .75; }
+    .today-btn { border-radius: 999px; background: var(--panel-2); color: var(--muted); border: 1px solid var(--line); padding: 8px 10px; font-weight: 800; font-size: 12px; white-space: nowrap; }
+    .year-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .year-btn, .month-btn { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 14px; padding: 13px 8px; font-weight: 800; }
+    .year-btn.active, .month-btn.active { background: var(--accent-2); color: #111; border-color: var(--accent-2); }
+    .arrow-row { display: flex; gap: 8px; }
+    .arrow-row button { width: 42px; height: 42px; border-radius: 14px; background: var(--panel-2); color: var(--text); border: 1px solid var(--line); font-size: 20px; }
+    .dow, .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .dow div { color: var(--faint); text-align: center; font-size: 11px; font-weight: 800; padding: 5px 0; }
+    .day {
+      min-height: 58px;
+      background: var(--panel);
+      border: 1px solid #272727;
+      border-radius: 15px;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+    }
+    .day.empty { opacity: .25; }
+    .day.today { background: var(--today-bg, #d8d8d8); border-color: #eeeeee; color: #111; }
+    .day.today .date-num { color: #111; font-weight: 900; }
+    .date-num { font-size: 12px; color: var(--muted); }
+    .badge {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 850;
+      font-size: 13px;
+      margin: auto auto 0;
+    }
+    .badge.low { background: #050505; color: white; border: 1px solid #333; }
+    .badge.mid { background: var(--green); color: white; }
+    .badge.high { background: var(--orange); color: white; }
+    .badge.max { background: var(--red); color: white; }
+    .legend { display: flex; align-items: center; justify-content: space-around; gap: 10px; margin-top: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 10px; }
+    .legend-item { color: var(--muted); font-size: 11px; text-align: center; background: transparent; border: 0; border-radius: 0; padding: 0; }
+
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+    }
+    .stat .value { font-size: 25px; font-weight: 850; letter-spacing: -0.04em; }
+    .stat .label { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .list { display: flex; flex-direction: column; gap: 8px; }
+    .entry-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .entry-main { min-width: 0; }
+    .entry-title { font-weight: 800; }
+    .entry-sub { color: var(--muted); font-size: 12px; margin-top: 3px; overflow-wrap: anywhere; }
+    .row-actions { display: flex; gap: 8px; }
+    .mini-btn { background: #111; color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; font-size: 12px; }
+    .mini-btn.danger { color: #ffb3b3; }
+
+
+    .legend-item.low-key::before,
+    .legend-item.mid-key::before,
+    .legend-item.high-key::before,
+    .legend-item.max-key::before {
+      content: "";
+      display: block;
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      margin: 0 auto 6px;
+      border: 1px solid rgba(255,255,255,.18);
+    }
+    .legend-item.low-key::before { background: #050505; }
+    .legend-item.mid-key::before { background: var(--green); }
+    .legend-item.high-key::before { background: var(--orange); }
+    .legend-item.max-key::before { background: var(--red); }
+
+    .entry-row.type-one { background: linear-gradient(135deg, var(--one-soft), rgba(91,75,49,.35)); border-color: rgba(128,104,61,.8); }
+    .entry-row.type-two { background: linear-gradient(135deg, var(--two-soft), rgba(69,58,51,.35)); border-color: rgba(90,74,63,.85); }
+    .entry-row.type-three { background: linear-gradient(135deg, var(--three-soft), rgba(116,120,123,.28)); border-color: rgba(191,194,196,.55); }
+    .entry-row.type-feeling { background: linear-gradient(135deg, #343434, rgba(52,52,52,.35)); border-color: rgba(120,120,120,.4); }
+    .entry-row.type-food { background: linear-gradient(135deg, var(--food-soft), rgba(85,107,80,.35)); border-color: rgba(127,154,119,.75); }
+    .entry-row.type-three .entry-title, .entry-row.type-three .entry-sub { color: #f2f2f2; }
+    .entry-labels { color: var(--muted); font-size: 12px; margin-top: 3px; font-style: italic; overflow-wrap: anywhere; }
+    .entry-note { color: var(--muted); font-size: 12px; margin-top: 5px; overflow-wrap: anywhere; white-space: pre-wrap; }
+
+    .food-details {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 3px;
+      font-style: normal;
+      overflow-wrap: anywhere;
+    }
+    .timeline { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+    .timeline-row { display: grid; grid-template-columns: 72px 1fr; gap: 10px; align-items: start; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 11px; }
+    .timeline-time { color: var(--muted); font-size: 12px; font-weight: 800; }
+    .timeline-main { font-size: 13px; }
+
+    .summary-day-head {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .summary-day-title h2 { margin-bottom: 2px; }
+    .summary-day-head .today-btn { margin: 0; }
+    .summary-day-head .arrow-row { flex: 0 0 auto; }
+    .settings-section { margin-bottom: 12px; overflow: hidden; }
+    .settings-section h2 { margin: 0; }
+    .settings-header { width: 100%; display: flex; justify-content: space-between; align-items: center; background: transparent; color: var(--text); padding: 0; text-align: left; }
+    .settings-body { display: none; margin-top: 12px; }
+    .settings-section.open .settings-body { display: block; }
+    .chev { color: var(--muted); font-size: 18px; }
+    .sync-form { display: grid; gap: 10px; margin-top: 12px; }
+    .sync-form label { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
+    .sync-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .settings-row:last-child { border-bottom: 0; }
+
+    .toggle-row { cursor: pointer; }
+
+    button.toggle-switch {
+      padding: 0;
+      min-width: 48px;
+      cursor: pointer;
+    }
+    .toggle-switch {
+      width: 48px;
+      height: 28px;
+      border-radius: 999px;
+      background: #2b2b2b;
+      border: 1px solid var(--line);
+      position: relative;
+      flex: 0 0 auto;
+      transition: background .16s ease, border-color .16s ease;
+    }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #9a9a9a;
+      top: 2px;
+      left: 2px;
+      transition: transform .16s ease, background .16s ease;
+    }
+    .toggle-switch.on {
+      background: rgba(196,122,54,.24);
+      border-color: rgba(196,122,54,.75);
+    }
+    .toggle-switch.on::after {
+      transform: translateX(20px);
+      background: var(--accent-2);
+    }
+
+    .visible-log-card {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 15px 16px;
+      margin-top: 10px;
+      text-align: left;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+    }
+    .visible-log-card strong {
+      font-size: 15px;
+      letter-spacing: -.01em;
+    }
+    .visible-log-card .small {
+      margin-top: 3px;
+    }
+    .visible-log-card:active {
+      transform: scale(.99);
+    }
+
+    .visible-log-card .card-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+    .visible-log-card .mini-btn {
+      padding: 8px 10px;
+      min-width: auto;
+    }
+
+    .log-counter-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 14px 2px 8px;
+    }
+    .log-counter-row .counter {
+      margin: 0;
+    }
+    .log-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      text-align: right;
+      flex: 0 0 auto;
+    }
+    .custom-type-divider {
+      height: 1px;
+      background: var(--line);
+      margin: 16px 0 8px;
+    }
+    .custom-type-heading {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin: 0 0 8px;
+    }
+
+
+    .color-custom-row {
+      display: grid;
+      grid-template-columns: 1fr 40px 96px;
+      gap: 10px;
+      align-items: center;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 12px;
+    }
+    .color-custom-row label {
+      min-width: 0;
+      font-weight: 750;
+      font-size: 14px;
+    }
+    .color-custom-row input {
+      padding: 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 750;
+      text-transform: uppercase;
+    }
+    .color-custom-swatch {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    @media (max-width: 380px) {
+      .color-custom-row { grid-template-columns: 1fr 34px 88px; gap: 8px; }
+      .color-custom-swatch { width: 34px; height: 34px; }
+    }
+    .hex-color-row {
+      display: grid;
+      grid-template-columns: 46px 1fr;
+      gap: 10px;
+      align-items: center;
+      margin-top: 12px;
+    }
+    .hex-preview {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    #customHexInput {
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--text);
+      font-weight: 750;
+      font-size: 15px;
+    }
+    #customHexInput:focus {
+      outline: none;
+      border-color: var(--accent-2);
+    }
+    .custom-color-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .color-choice {
+      height: 44px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
+    .edit-icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      background: var(--panel);
+      color: var(--muted);
+      border: 1px solid var(--line);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      flex: 0 0 auto;
+    }
+    .edit-icon-btn svg {
+      width: 17px;
+      height: 17px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .tracker-card.card-custom .track-part {
+      background: transparent !important;
+      color: inherit !important;
+    }
+    .tracker-card.card-custom .track-part.left {
+      border-right-color: rgba(255,255,255,.22);
+    }
+
+    .tracker-card[style] .track-part {
+      background: transparent !important;
+      color: inherit !important;
+    }
+    .tracker-card[style] .track-part.left {
+      border-right-color: rgba(255,255,255,.22);
+    }
+
+    .visible-log-card {
+      position: relative;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .visible-log-card .card-actions {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .visible-log-card .edit-icon-btn {
+      margin: 0;
+    }
+    .visible-log-card .toggle-switch {
+      margin: 0;
+    }
+    .custom-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 0 0 auto;
+      margin-left: auto;
+    }
+    .custom-color-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.35);
+      display: inline-block;
+      margin-right: 7px;
+      vertical-align: -3px;
+    }
+    .range { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(86px + var(--safe-bottom));
+      transform: translateX(-50%) translateY(20px);
+      background: #eee;
+      color: #111;
+      border-radius: 999px;
+      padding: 11px 16px;
+      font-weight: 750;
+      opacity: 0;
+      pointer-events: none;
+      transition: all .18s ease;
+      z-index: 120;
+      max-width: calc(100% - 32px);
+      text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (min-width: 700px) {
+      body { background: radial-gradient(circle at top, #1d1d1d, #0d0d0d); }
+      .app { padding-top: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="top">
+      <div class="title" id="pageTitle">Log</div>
+      <div class="sync-chip" id="syncChip">local</div>
+    </header>
+
+    <section id="logScreen" class="screen active"></section>
+    <section id="calendarScreen" class="screen"></section>
+    <section id="summaryScreen" class="screen"></section>
+    <section id="settingsScreen" class="screen"></section>
+  </main>
+
+  <nav class="nav">
+    <button data-nav="log" class="active">Log</button>
+    <button data-nav="calendar">Calendar</button>
+    <button data-nav="summary">Summary</button>
+    <button data-nav="settings">Settings</button>
+  </nav>
+
+  <div id="sheetBackdrop" class="sheet-backdrop"></div>
+  <div id="sheet" class="sheet"></div>
+  <div id="toast" class="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const STORAGE_KEY = 'discreet_tracker_entries_v1';
+    const SETTINGS_KEY = 'discreet_tracker_settings_v1';
+
+    let entries = loadEntries();
+    let settings = loadSettings();
+    settings.visibleLogButtons = Object.assign({ one: true, two: true, three: true, food: true, feeling: true }, settings.visibleLogButtons || {});
+    settings.customLogTypes = settings.customLogTypes || [];
+    settings.appColors = settings.appColors || {};
+    if (settings.showLogScreenLabels === undefined) settings.showLogScreenLabels = false;
+    applyAppColors();
+    let activeTab = 'log';
+    let viewedMonth = new Date();
+    let summaryViewedDate = new Date();
+    let calendarMode = 'pees';
+    let editingEntryId = null;
+
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+    function uuid() {
+      if (crypto && crypto.randomUUID) return crypto.randomUUID();
+      return 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+    }
+
+    function loadEntries() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+      catch { return []; }
+    }
+    function loadSettings() {
+      try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); }
+      catch { return {}; }
+    }
+    function saveSettings() {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    }
+    function getSupabaseClient() {
+      if (!settings.supabaseUrl || !settings.supabaseAnonKey || !window.supabase) return null;
+      return window.supabase.createClient(settings.supabaseUrl, settings.supabaseAnonKey);
+    }
+    function saveEntries() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+      updateSyncChip();
+    }
+    function updateSyncChip() {
+      const pending = entries.filter(e => e.sync_status === 'pending').length;
+      const connected = !!(settings.supabaseUrl && settings.supabaseAnonKey);
+      $('#syncChip').textContent = pending ? `${pending} pending` : (connected ? 'cloud ready' : 'local');
+    }
+
+    function nowIso() { return new Date().toISOString(); }
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function toLocalInputValue(d) {
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+    function dateOnlyLocal(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+    function formatTime(d) {
+      return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    }
+    function formatDate(d) {
+      return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    function startOfTrackingDay(date = new Date()) {
+      const d = new Date(date);
+      const start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 4, 0, 0, 0);
+      if (d < start) start.setDate(start.getDate() - 1);
+      return start;
+    }
+    function endOfTrackingDay(date = new Date()) {
+      const s = startOfTrackingDay(date);
+      const e = new Date(s);
+      e.setDate(e.getDate() + 1);
+      return e;
+    }
+    function isInTrackingDay(iso, baseDate) {
+      const d = new Date(iso);
+      const s = startOfTrackingDay(baseDate);
+      const e = endOfTrackingDay(baseDate);
+      return d >= s && d < e;
+    }
+    function visibleEntries() { return entries.filter(e => !e.deleted_at); }
+    function entriesOfType(type) { return visibleEntries().filter(e => e.type === type); }
+    function latestEntry(type) {
+      return entriesOfType(type).sort((a,b) => new Date(b.event_at) - new Date(a.event_at))[0] || null;
+    }
+    function formatSince(type) {
+      const last = latestEntry(type);
+      if (!last) return '—';
+      const hours = (Date.now() - new Date(last.event_at).getTime()) / 36e5;
+      if (hours < 24) return `${Math.max(0, hours).toFixed(1)}h`;
+      return `${Math.max(0, hours / 24).toFixed(1)}d`;
+    }
+    function oneCountToday() {
+      return entriesOfType('one').filter(e => isInTrackingDay(e.event_at, new Date())).length;
+    }
+    function feelingStatusToday() {
+      return entriesOfType('feeling').some(e => isInTrackingDay(e.event_at, new Date())) ? 'logged' : 'not yet logged';
+    }
+    function typeLabel(t) {
+      const builtIn = { one: 'Pee', two: 'Poop', three: 'Release', food: 'Food/Drink', feeling: 'Feeling' };
+      if (builtIn[t]) return builtIn[t];
+      const custom = (settings.customLogTypes || []).find(x => x.id === t);
+      return custom?.label || t;
+    }
+    function isCustomType(type) {
+      return (settings.customLogTypes || []).some(x => x.id === type);
+    }
+    function activeCustomTypes() {
+      return (settings.customLogTypes || []).filter(x => !x.deleted_at);
+    }
+    const CUSTOM_LOG_COLORS = [
+      { name: 'Sage', value: '#6f8f73' },
+      { name: 'Slate', value: '#6f7f8f' },
+      { name: 'Mauve', value: '#8d6f86' },
+      { name: 'Clay', value: '#9a6f5f' },
+      { name: 'Amber', value: '#a88a52' },
+      { name: 'Olive', value: '#7f8757' },
+      { name: 'Teal', value: '#5f8b86' },
+      { name: 'Graphite', value: '#777777' },
+      { name: 'Dusty Blue', value: '#607d9a' },
+      { name: 'Muted Rose', value: '#9a6670' },
+      { name: 'Deep Plum', value: '#75628c' },
+      { name: 'Moss', value: '#5f8060' }
+    ];
+    const DEFAULT_APP_COLORS = {
+      bg: '#101010',
+      panel: '#171717',
+      panel2: '#202020',
+      panel3: '#292929',
+      text: '#eeeeee',
+      muted: '#a7a7a7',
+      faint: '#6f6f6f',
+      line: '#333333',
+      accent: '#c17f32',
+      accent2: '#e4a85b',
+      green: '#4f8f5b',
+      orange: '#b66d2f',
+      red: '#a84444',
+      navBg: '#161616',
+      inputBg: '#111111',
+      todayBg: '#d8d8d8',
+      one: '#80683d',
+      two: '#5a4a3f',
+      three: '#bfc2c4',
+      food: '#7f9a77',
+      feeling: '#343434'
+    };
+    const COLOR_CONTROLS = [
+      ['bg','App background'], ['panel','Cards / panels'], ['panel2','Secondary cards'], ['panel3','Tertiary surfaces'],
+      ['text','Primary text'], ['muted','Muted text'], ['faint','Faint text'], ['line','Borders / divider lines'],
+      ['accent','Main accent'], ['accent2','Button accent'], ['green','Calendar green'], ['orange','Calendar orange'],
+      ['red','Calendar red'], ['navBg','Bottom navigation'], ['inputBg','Inputs / text boxes'], ['todayBg','Current day highlight'],
+      ['one','Pee default'], ['two','Poop default'], ['three','Release default'], ['food','Food/Drink default'], ['feeling','Feeling default']
+    ];
+    const COLOR_VAR_MAP = {
+      bg: '--bg', panel: '--panel', panel2: '--panel-2', panel3: '--panel-3', text: '--text',
+      muted: '--muted', faint: '--faint', line: '--line', accent: '--accent', accent2: '--accent-2',
+      green: '--green', orange: '--orange', red: '--red', one: '--one', two: '--two', three: '--three',
+      food: '--food', feeling: '--feeling'
+    };
+    function appColor(key) {
+      return settings.appColors?.[key] || DEFAULT_APP_COLORS[key] || '#777777';
+    }
+    function applyAppColors() {
+      const root = document.documentElement;
+      const colors = Object.assign({}, DEFAULT_APP_COLORS, settings.appColors || {});
+      Object.entries(COLOR_VAR_MAP).forEach(([key, cssVar]) => root.style.setProperty(cssVar, colors[key]));
+      root.style.setProperty('--nav-bg', colors.navBg);
+      root.style.setProperty('--input-bg', colors.inputBg);
+      root.style.setProperty('--today-bg', colors.todayBg);
+    }
+
+    function customTypeById(type) {
+      return (settings.customLogTypes || []).find(x => x.id === type);
+    }
+    function defaultTypeColor(type) {
+      return {
+        one: appColor('one'),
+        two: appColor('two'),
+        three: appColor('three'),
+        food: appColor('food'),
+        feeling: appColor('feeling')
+      }[type] || CUSTOM_LOG_COLORS[0].value;
+    }
+    function logTypeColor(type) {
+      settings.logTypeColors = settings.logTypeColors || {};
+      if (settings.logTypeColors[type]) return settings.logTypeColors[type];
+      if (isCustomType(type)) return customTypeById(type)?.color || CUSTOM_LOG_COLORS[0].value;
+      return defaultTypeColor(type);
+    }
+    function customTypeColor(type) {
+      return logTypeColor(type);
+    }
+    function customCardClass(type) {
+      return 'card-custom';
+    }
+    function describeEntry(e) {
+      const bits = [];
+      if (e.type === 'one') {
+        if (e.one_urgent) bits.push('urgent');
+        if (e.one_uncomfortable) bits.push('uncomfortable');
+        if (e.one_volume_low) bits.push('low');
+        if (e.one_volume_standard) bits.push('standard');
+        if (e.one_volume_high) bits.push('high');
+      }
+      if (e.type === 'two') {
+        if (e.two_urgent) bits.push('urgent');
+        if (e.two_uncomfortable) bits.push('uncomfortable');
+        if (e.two_solid) bits.push('solid');
+        if (e.two_loose) bits.push('loose');
+        if (e.two_liquid) bits.push('liquid');
+      }
+      if (e.type === 'feeling' && e.feeling_rating) {
+        const feelingLabels = { very_bad: 'very bad', bad: 'bad', neutral: 'neutral', good: 'good', great: 'great', real_bad: 'very bad', somewhat_bad: 'bad' };
+        bits.push(feelingLabels[e.feeling_rating] || e.feeling_rating.replaceAll('_', ' '));
+      }
+      if (e.type === 'food' && Array.isArray(e.food_items)) {
+        bits.push(...e.food_items);
+      }
+      if (e.notes) bits.push(`“${e.notes}”`);
+      return bits.join(' · ') || 'No details';
+    }
+
+    function render() {
+      updateSyncChip();
+      $$('.screen').forEach(s => s.classList.remove('active'));
+      $(`#${activeTab}Screen`).classList.add('active');
+      $$('.nav button').forEach(b => b.classList.toggle('active', b.dataset.nav === activeTab));
+      $('#pageTitle').textContent = ({ log: 'Log', calendar: 'Calendar', summary: 'Summary', settings: 'Settings' })[activeTab];
+      renderLog(); renderCalendar(); renderSummary(); renderSettings();
+    }
+
+    function rewindSvg() {
+      return `<svg class="rewind-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <path d="M30 10 L14 24 L30 38" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`;
+    }
+
+    function trackerCard(type, cardClass, counterText, full = false) {
+      const labelHtml = settings.showLogScreenLabels ? `<div class="log-label">${escapeHtml(typeLabel(type))}</div>` : '';
+      const counterHtml = `<div class="log-counter-row"><div class="counter">${counterText}</div>${labelHtml}</div>`;
+      const hasCustomColor = isCustomType(type) || (settings.logTypeColors && settings.logTypeColors[type]);
+      const style = hasCustomColor ? `style="--custom-log-color:${logTypeColor(type)}; background: var(--custom-log-color); color:#f4f4f4;"` : '';
+      if (full) {
+        return `${counterHtml}
+          <div class="tracker-card ${cardClass}" ${style}>
+            <button class="track-part left" aria-label="Log previous" onclick="openBackdateSheet('${type}')">${rewindSvg()}</button>
+            <button class="track-part right" aria-label="Log Now" onclick="openEntrySheet('${type}', new Date(), false)"><span class="track-now-label">Log Now</span></button>
+          </div>`;
+      }
+      return `${counterHtml}
+        <div class="tracker-card ${cardClass}" ${style}>
+          <button class="track-part left" aria-label="Log previous" onclick="openBackdateSheet('${type}')">${rewindSvg()}</button>
+          <button class="track-part right" aria-label="Log Now" onclick="openEntrySheet('${type}', new Date(), false)"><span class="track-now-label">Log Now</span></button>
+        </div>`;
+    }
+
+    function isLogButtonVisible(type) {
+      const defaults = { one: true, two: true, three: true, food: true, feeling: true };
+      settings.visibleLogButtons = Object.assign(defaults, settings.visibleLogButtons || {});
+      return !(settings.visibleLogButtons[type] === false || settings.visibleLogButtons[type] === 'false');
+    }
+
+    function renderLog() {
+      const cards = [];
+      if (isLogButtonVisible('one')) cards.push(trackerCard('one', 'card-one', `${formatSince('one')} (${oneCountToday()})`));
+      if (isLogButtonVisible('two')) cards.push(trackerCard('two', 'card-two', formatSince('two')));
+      if (isLogButtonVisible('three')) cards.push(trackerCard('three', 'card-three', formatSince('three')));
+      if (isLogButtonVisible('food')) cards.push(trackerCard('food', 'card-food', formatSince('food')));
+      activeCustomTypes().forEach(t => {
+        if (isLogButtonVisible(t.id)) cards.push(trackerCard(t.id, customCardClass(t.id), formatSince(t.id)));
+      });
+      if (isLogButtonVisible('feeling')) cards.push(trackerCard('feeling', 'card-feeling', feelingStatusToday(), true));
+      $('#logScreen').innerHTML = cards.length ? cards.join('') : `<div class="panel"><h2>No log buttons visible</h2><div class="small">Turn buttons back on in Settings → Log Types.</div></div>`;
+    }
+
+    function openSheet(html) {
+      $('#sheet').innerHTML = html;
+      $('#sheetBackdrop').classList.add('show');
+      $('#sheet').classList.add('show');
+    }
+    function closeSheet() {
+      $('#sheetBackdrop').classList.remove('show');
+      $('#sheet').classList.remove('show');
+      editingEntryId = null;
+    }
+    $('#sheetBackdrop').addEventListener('click', closeSheet);
+
+    function openBackdateSheet(type) {
+      const today = new Date();
+      const yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
+      const defaultTime = `${pad(today.getHours())}:${pad(today.getMinutes())}`;
+      openSheet(`
+        <div class="sheet-head"><div class="sheet-title">Log previous</div><button class="icon-btn" onclick="closeSheet()">×</button></div>
+        <div class="section-label">Day</div>
+        <div class="two-col">
+          <button class="pill selected" id="dayToday" onclick="selectBackdateDay('today')">Today</button>
+          <button class="pill" id="dayYesterday" onclick="selectBackdateDay('yesterday')">Yesterday</button>
+        </div>
+        <div class="section-label">Time</div>
+        <input id="backTime" type="time" value="${defaultTime}">
+        <button class="save-btn" onclick="continueBackdate('${type}')">Continue</button>
+      `);
+      window.backdateDay = 'today';
+    }
+    function selectBackdateDay(day) {
+      window.backdateDay = day;
+      $('#dayToday').classList.toggle('selected', day === 'today');
+      $('#dayYesterday').classList.toggle('selected', day === 'yesterday');
+    }
+    function continueBackdate(type) {
+      const base = new Date();
+      if (window.backdateDay === 'yesterday') base.setDate(base.getDate() - 1);
+      const [h,m] = ($('#backTime').value || '12:00').split(':').map(Number);
+      base.setHours(h || 0, m || 0, 0, 0);
+      openEntrySheet(type, base, true);
+    }
+
+    function togglePill(btn) { btn.classList.toggle('selected'); }
+    function selected(id) { const el = $('#' + id); return !!el && el.classList.contains('selected'); }
+
+    function pill(id, label, active=false) {
+      return `<button id="${id}" class="pill ${active ? 'selected' : ''}" onclick="togglePill(this)">${label}</button>`;
+    }
+
+    function normalizedFeeling(value) {
+      return ({ real_bad: 'very_bad', somewhat_bad: 'bad' }[value] || value || '');
+    }
+    function feelingMeta(value) {
+      const v = normalizedFeeling(value);
+      return {
+        very_bad: { cls: 'face-red', label: 'very bad', curve: -12, color: '#b84b4b' },
+        bad: { cls: 'face-orange', label: 'bad', curve: -7, color: '#c47a36' },
+        neutral: { cls: 'face-yellow', label: 'neutral', curve: 0, color: '#c9a84b' },
+        good: { cls: 'face-pale-green', label: 'good', curve: 7, color: '#9dbc73' },
+        great: { cls: 'face-green', label: 'great', curve: 12, color: '#5fa66a' }
+      }[v] || null;
+    }
+    function mouthSvg(curve, color = 'currentColor') {
+      const common = `stroke="${color}" stroke-linecap="round" stroke-linejoin="round" fill="none"`;
+      if (curve === 0) return `<line x1="10.5" y1="23" x2="23.5" y2="23" ${common} />`;
+      if (curve < 0) return `<path d="M10 26 Q17 ${26 - Math.abs(curve) / 2} 24 26" ${common} />`;
+      return `<path d="M10 22 Q17 ${22 + curve / 2} 24 22" ${common} />`;
+    }
+    function rawFeelingSvg(meta, clipId = '') {
+      if (!meta) return '';
+      const color = meta.color;
+      const clipAttr = clipId ? ` clip-path="url(#${clipId})"` : '';
+      return `<g${clipAttr}>
+        <circle cx="17" cy="17" r="14" stroke="${color}" stroke-width="2.8" fill="none" />
+        <circle cx="12" cy="14" r="1.45" fill="${color}" stroke="none" />
+        <circle cx="22" cy="14" r="1.45" fill="${color}" stroke="none" />
+        ${mouthSvg(meta.curve, color)}
+      </g>`;
+    }
+    function feelingSvg(value, sizeClass = '') {
+      const meta = feelingMeta(value);
+      if (!meta) return '';
+      const size = sizeClass.includes('large') ? 42 : sizeClass.includes('small') ? 28 : 34;
+      return `<span class="feeling-face ${meta.cls} ${sizeClass}" aria-label="${meta.label} feeling">
+        <svg width="${size}" height="${size}" viewBox="0 0 34 34" aria-hidden="true" role="img" style="display:block;overflow:visible">
+          ${rawFeelingSvg(meta)}
+        </svg>
+      </span>`;
+    }
+    function splitFeelingSvg(leftValue, rightValue, sizeClass = '') {
+      const left = feelingMeta(leftValue);
+      const right = feelingMeta(rightValue);
+      if (!left && !right) return '';
+      if (!left || !right || normalizedFeeling(leftValue) === normalizedFeeling(rightValue)) return feelingSvg(leftValue || rightValue, sizeClass);
+      const id = `splitFace${Math.random().toString(36).slice(2)}`;
+      const size = sizeClass.includes('large') ? 42 : sizeClass.includes('small') ? 28 : 34;
+      return `<span class="feeling-face ${sizeClass}" aria-label="split feeling">
+        <svg width="${size}" height="${size}" viewBox="0 0 34 34" aria-hidden="true" role="img" style="display:block;overflow:visible">
+          <defs>
+            <clipPath id="${id}Left"><rect x="0" y="0" width="17" height="34" /></clipPath>
+            <clipPath id="${id}Right"><rect x="17" y="0" width="17" height="34" /></clipPath>
+          </defs>
+          ${rawFeelingSvg(left, `${id}Left`)}
+          ${rawFeelingSvg(right, `${id}Right`)}
+          <line x1="17" y1="3.5" x2="17" y2="30.5" stroke="rgba(255,255,255,.36)" stroke-width="1.1" stroke-linecap="round" />
+        </svg>
+      </span>`;
+    }
+    function faceButton(value, colorClass, ariaLabel, mouthCurve, currentValue) {
+      const selectedClass = currentValue === value ? ' selected' : '';
+      return `<button type="button" class="face-btn ${colorClass}${selectedClass}" data-feeling="${value}" aria-label="${ariaLabel}" onclick="selectFeeling(this)">
+        ${feelingSvg(value)}
+      </button>`;
+    }
+
+    function openEntrySheet(type, eventDate, isBackdated, entry = null) {
+      editingEntryId = entry ? entry.id : null;
+      const title = entry ? `Edit ${typeLabel(type)}` : typeLabel(type);
+      const notes = entry?.notes || '';
+      const eventIso = eventDate.toISOString();
+      let body = '';
+      if (type === 'one') {
+        body = `
+          <div class="section-label">Urgency</div>
+          <div class="pill-grid">
+            ${pill('one_urgent', 'Urgent', entry?.one_urgent)}
+            ${pill('one_uncomfortable', 'Uncomfortable', entry?.one_uncomfortable)}
+          </div>
+          <div class="section-label">Volume</div>
+          <div class="pill-grid">
+            ${pill('one_volume_low', 'Low', entry?.one_volume_low)}
+            ${pill('one_volume_standard', 'Standard', entry?.one_volume_standard)}
+            ${pill('one_volume_high', 'High', entry?.one_volume_high)}
+          </div>`;
+      } else if (type === 'two') {
+        body = `
+          <div class="section-label">Urgency</div>
+          <div class="pill-grid">
+            ${pill('two_urgent', 'Urgent', entry?.two_urgent)}
+            ${pill('two_uncomfortable', 'Uncomfortable', entry?.two_uncomfortable)}
+          </div>
+          <div class="section-label">Consistency</div>
+          <div class="pill-grid">
+            ${pill('two_solid', 'Solid', entry?.two_solid)}
+            ${pill('two_loose', 'Loose', entry?.two_loose)}
+            ${pill('two_liquid', 'Liquid', entry?.two_liquid)}
+          </div>`;
+      } else if (type === 'food') {
+        const quickOptions = settings.foodQuickOptions || [];
+        const selectedFood = Array.isArray(entry?.food_items) ? entry.food_items : [];
+        body = quickOptions.length ? `
+          <div class="section-label">Quick Log</div>
+          <div class="pill-grid">
+            ${quickOptions.map((opt, i) => pill(`food_item_${i}`, opt, selectedFood.includes(opt))).join('')}
+          </div>` : `<div class="small" style="margin-top:8px;">No Food/Drink quick options yet. Add them in Settings.</div>`;
+      } else if (type === 'feeling') {
+        const val = ({ real_bad: 'very_bad', somewhat_bad: 'bad' }[entry?.feeling_rating] || entry?.feeling_rating || '');
+        body = `
+          <div class="section-label">Feeling</div>
+          <div class="feeling-scale" id="feelingGrid" aria-label="Feeling scale">
+            ${faceButton('very_bad', 'face-red', 'upset face', -12, val)}
+            ${faceButton('bad', 'face-orange', 'sad face', -7, val)}
+            ${faceButton('neutral', 'face-yellow', 'neutral face', 0, val)}
+            ${faceButton('good', 'face-pale-green', 'slight smile face', 7, val)}
+            ${faceButton('great', 'face-green', 'happy face', 12, val)}
+          </div>`;
+      }
+      openSheet(`
+        <div class="sheet-head"><div><div class="sheet-title">${title}</div><div class="small">${formatDate(eventDate)} · ${formatTime(eventDate)}</div></div><button class="icon-btn" onclick="closeSheet()">×</button></div>
+        ${body}
+        <div class="section-label">Notes</div>
+        <textarea id="entryNotes" placeholder="Optional notes">${escapeHtml(notes)}</textarea>
+        <button class="save-btn" onclick="saveEntry('${type}', '${eventIso}', ${isBackdated})">Save Entry</button>
+        ${entry ? '<button class="danger-btn" onclick="deleteEntry(editingEntryId)">Delete Entry</button>' : ''}
+      `);
+    }
+    function selectFeeling(btn) {
+      $$('#feelingGrid .face-btn').forEach(p => p.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    function blankEntryFields() {
+      return {
+        one_urgent: false, one_uncomfortable: false, one_volume_low: false, one_volume_standard: false, one_volume_high: false,
+        two_urgent: false, two_uncomfortable: false, two_solid: false, two_loose: false, two_liquid: false,
+        feeling_rating: null,
+        food_items: []
+      };
+    }
+    function saveEntry(type, eventIso, isBackdated) {
+      const now = nowIso();
+      const base = {
+        ...(editingEntryId ? entries.find(e => e.id === editingEntryId) : {}),
+        ...blankEntryFields(),
+        id: editingEntryId || uuid(),
+        type,
+        type_label: typeLabel(type),
+        type_deleted_at: isCustomType(type) ? ((settings.customLogTypes || []).find(x => x.id === type)?.deleted_at || null) : null,
+        event_at: eventIso,
+        created_at: editingEntryId ? entries.find(e => e.id === editingEntryId).created_at : now,
+        updated_at: now,
+        is_backdated: !!isBackdated,
+        notes: $('#entryNotes')?.value || '',
+        sync_status: 'pending',
+        deleted_at: null
+      };
+      if (type === 'one') {
+        base.one_urgent = selected('one_urgent');
+        base.one_uncomfortable = selected('one_uncomfortable');
+        base.one_volume_low = selected('one_volume_low');
+        base.one_volume_standard = selected('one_volume_standard');
+        base.one_volume_high = selected('one_volume_high');
+      }
+      if (type === 'two') {
+        base.two_urgent = selected('two_urgent');
+        base.two_uncomfortable = selected('two_uncomfortable');
+        base.two_solid = selected('two_solid');
+        base.two_loose = selected('two_loose');
+        base.two_liquid = selected('two_liquid');
+      }
+      if (type === 'food') {
+        const quickOptions = settings.foodQuickOptions || [];
+        base.food_items = quickOptions.filter((_, i) => selected(`food_item_${i}`));
+      }
+      if (type === 'feeling') {
+        const chosen = $('#feelingGrid .face-btn.selected');
+        base.feeling_rating = chosen ? chosen.dataset.feeling : null;
+        if (!editingEntryId) {
+          const sameDayFeelings = entriesOfType('feeling').filter(e => isInTrackingDay(e.event_at, new Date(eventIso)));
+          if (sameDayFeelings.length >= 2) {
+            toast('Max two feelings per day');
+            return;
+          }
+        }
+      }
+      if (editingEntryId) entries = entries.map(e => e.id === editingEntryId ? base : e);
+      else entries.push(base);
+      saveEntries(); closeSheet(); render(); toast('Saved'); autoBackupPending();
+    }
+    function deleteEntry(id) {
+      if (!id) return;
+      if (!confirm('Delete this entry?')) return;
+      const now = nowIso();
+      entries = entries.map(e => e.id === id ? { ...e, deleted_at: now, updated_at: now, sync_status: 'pending' } : e);
+      saveEntries(); closeSheet(); render(); toast('Deleted'); autoBackupPending();
+    }
+
+    function feelingsForDay(baseDate) {
+      return entriesOfType('feeling')
+        .filter(e => e.feeling_rating && isInTrackingDay(e.event_at, baseDate))
+        .sort((a,b)=> new Date(a.event_at)-new Date(b.event_at));
+    }
+    function feelingSummaryForDay(baseDate) {
+      const feelings = feelingsForDay(baseDate);
+      if (!feelings.length) return '';
+      const first = normalizedFeeling(feelings[0].feeling_rating);
+      const last = normalizedFeeling(feelings[feelings.length - 1].feeling_rating);
+      return splitFeelingSvg(first, last, 'small');
+    }
+    function setCalendarMode(mode) {
+      calendarMode = mode;
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      const y = viewedMonth.getFullYear();
+      const m = viewedMonth.getMonth();
+      const first = new Date(y, m, 1);
+      const daysInMonth = new Date(y, m + 1, 0).getDate();
+      const startOffset = first.getDay();
+      const monthName = viewedMonth.toLocaleDateString([], { month: 'long', year: 'numeric' });
+      const today = new Date();
+      let cells = '';
+      for (let i=0; i<startOffset; i++) cells += `<div class="day empty"></div>`;
+      for (let d=1; d<=daysInMonth; d++) {
+        const date = new Date(y, m, d, 12, 0, 0);
+        const count = entriesOfType('one').filter(e => isInTrackingDay(e.event_at, date)).length;
+        const feeling = feelingSummaryForDay(date);
+        const isToday = y === today.getFullYear() && m === today.getMonth() && d === today.getDate();
+        cells += `<button class="day ${isToday ? 'today' : ''}" onclick="openDayDetail('${date.toISOString()}')">
+          <span class="date-num">${d}</span>
+          ${calendarMode === 'pees'
+            ? (count ? `<span class="badge ${badgeClass(count)}">${count}</span>` : '')
+            : (feeling ? `<span class="feeling-day-badge">${feeling}</span>` : '')}
+        </button>`;
+      }
+      $('#calendarScreen').innerHTML = `
+        <div class="month-head">
+          <button class="month-title" onclick="openYearPicker()">${monthName}</button>
+          <button class="today-btn" onclick="goToThisMonth()">Current Month</button>
+          <div class="arrow-row"><button onclick="changeMonth(-1)">‹</button><button onclick="changeMonth(1)">›</button></div>
+        </div>
+        <div class="calendar-toggle">
+          <button class="${calendarMode === 'pees' ? 'active' : ''}" onclick="setCalendarMode('pees')">Pees</button>
+          <button class="${calendarMode === 'feeling' ? 'active' : ''}" onclick="setCalendarMode('feeling')">Feeling</button>
+        </div>
+        <div class="dow"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>
+        <div class="calendar-grid">${cells}</div>
+        ${calendarMode === 'pees' ? `<div class="legend" aria-label="Pee count legend">
+          <div class="legend-item low-key">1–3</div><div class="legend-item mid-key">4–6</div><div class="legend-item high-key">7–8</div><div class="legend-item max-key">9+</div>
+        </div>` : `<div class="small" style="margin-top:12px;text-align:center;">Feeling view shows one face for the day. If two different feelings were logged, the face is split first-to-last.</div>`}`;
+    }
+    function badgeClass(count) { return count <= 3 ? 'low' : count <= 6 ? 'mid' : count <= 8 ? 'high' : 'max'; }
+    function changeMonth(delta) { viewedMonth = new Date(viewedMonth.getFullYear(), viewedMonth.getMonth() + delta, 1); renderCalendar(); }
+    function goToThisMonth() { const now = new Date(); viewedMonth = new Date(now.getFullYear(), now.getMonth(), 1); renderCalendar(); }
+    function validCalendarMonthsByYear() {
+      const map = new Map();
+      visibleEntries().forEach(e => {
+        const d = new Date(e.event_at);
+        if (Number.isNaN(d.getTime())) return;
+        const y = d.getFullYear();
+        const m = d.getMonth();
+        if (!map.has(y)) map.set(y, new Set());
+        map.get(y).add(m);
+      });
+      return map;
+    }
+    function openYearPicker() {
+      const selectedYear = viewedMonth.getFullYear();
+      const byYear = validCalendarMonthsByYear();
+      const years = Array.from(byYear.keys()).sort((a,b) => b-a);
+      if (!years.length) {
+        openSheet(`
+          <div class="sheet-head"><div><div class="sheet-title">Change month</div><div class="small">No saved entries yet.</div></div><button class="icon-btn" onclick="closeSheet()">×</button></div>
+          <button class="save-btn" onclick="goToThisMonth(); closeSheet();">Current Month</button>
+        `);
+        return;
+      }
+      openSheet(`
+        <div class="sheet-head"><div><div class="sheet-title">Choose year</div><div class="small">Only years with saved entries are shown.</div></div><button class="icon-btn" onclick="closeSheet()">×</button></div>
+        <div class="year-grid">
+          ${years.map(y => `<button class="year-btn ${y === selectedYear ? 'active' : ''}" onclick="openMonthPicker(${y})">${y}</button>`).join('')}
+        </div>
+      `);
+    }
+    function openMonthPicker(year) {
+      const byYear = validCalendarMonthsByYear();
+      const months = Array.from(byYear.get(year) || []).sort((a,b) => a-b);
+      const currentMonth = viewedMonth.getFullYear() === year ? viewedMonth.getMonth() : -1;
+      openSheet(`
+        <div class="sheet-head"><div><div class="sheet-title">Choose month</div><div class="small">${year}</div></div><button class="icon-btn" onclick="closeSheet()">×</button></div>
+        <div class="year-grid">
+          ${months.map(m => `<button class="month-btn ${m === currentMonth ? 'active' : ''}" onclick="setCalendarMonth(${year}, ${m})">${new Date(year, m, 1).toLocaleDateString([], { month: 'short' })}</button>`).join('')}
+        </div>
+        <button class="secondary-btn" onclick="openYearPicker()">Back to years</button>
+      `);
+    }
+    function setCalendarMonth(year, month) {
+      viewedMonth = new Date(year, month, 1);
+      closeSheet();
+      renderCalendar();
+    }
+
+    function openDayDetail(iso) {
+      const base = new Date(iso);
+      const dayEntries = visibleEntries().filter(e => isInTrackingDay(e.event_at, base)).sort((a,b)=> new Date(a.event_at)-new Date(b.event_at));
+      const rows = dayEntries.length ? dayEntries.map(e => entryRow(e)).join('') : `<div class="small">No entries for this day.</div>`;
+      const feeling = feelingSummaryForDay(base);
+      openSheet(`
+        <div class="sheet-head"><div><div class="day-title-row"><div class="sheet-title">${formatDate(base)}</div>${feeling || ''}</div><div class="small">4:00 AM day boundary</div></div><button class="icon-btn" onclick="closeSheet()">×</button></div>
+        <div class="list">${rows}</div>
+      `);
+    }
+    function previousOneInterval(entry) {
+      if (entry.type !== 'one') return null;
+      const eventTime = new Date(entry.event_at).getTime();
+      const previous = entriesOfType('one')
+        .filter(e => e.id !== entry.id && new Date(e.event_at).getTime() < eventTime)
+        .sort((a,b)=> new Date(b.event_at)-new Date(a.event_at))[0];
+      if (!previous) return null;
+      const hours = (eventTime - new Date(previous.event_at).getTime()) / 36e5;
+      return hours >= 0 ? hours : null;
+    }
+    function entryLabels(e) {
+      const labels = [];
+      if (e.type === 'one') {
+        if (e.one_urgent) labels.push('Urgent');
+        if (e.one_uncomfortable) labels.push('Uncomfortable');
+        if (e.one_volume_low) labels.push('Low');
+        if (e.one_volume_standard) labels.push('Standard');
+        if (e.one_volume_high) labels.push('High');
+      }
+      if (e.type === 'two') {
+        if (e.two_urgent) labels.push('Urgent');
+        if (e.two_uncomfortable) labels.push('Uncomfortable');
+        if (e.two_solid) labels.push('Solid');
+        if (e.two_loose) labels.push('Loose');
+        if (e.two_liquid) labels.push('Liquid');
+      }
+      if (e.type === 'food' && Array.isArray(e.food_items)) labels.push(...e.food_items);
+      if (e.type === 'feeling' && e.feeling_rating) {
+        const feelingLabels = { very_bad: 'Very bad', bad: 'Bad', neutral: 'Neutral', good: 'Good', great: 'Great', real_bad: 'Very bad', somewhat_bad: 'Bad' };
+        labels.push(feelingLabels[e.feeling_rating] || e.feeling_rating.replaceAll('_', ' '));
+      }
+      return labels;
+    }
+    function entryRow(e) {
+      const interval = previousOneInterval(e);
+      const labels = entryLabels(e);
+      const intervalText = interval === null ? '' : `<div class="entry-sub">${interval.toFixed(1)}h since last pee</div>`;
+      const labelText = labels.length ? `<div class="${e.type === 'food' ? 'food-details' : 'entry-labels'}">${escapeHtml(labels.join(' · '))}</div>` : '';
+      const noteText = e.notes ? `<div class="entry-note">${escapeHtml(e.notes)}</div>` : '';
+      return `<div class="entry-row type-${e.type}">
+        <div class="entry-main"><div class="entry-title">${formatTime(new Date(e.event_at))} · ${typeLabel(e.type)}</div>${intervalText}${labelText}${noteText || (!labels.length ? '<div class="entry-sub">No details</div>' : '')}</div>
+        <div class="row-actions"><button class="mini-btn" onclick="editEntry('${e.id}')">Edit</button><button class="mini-btn danger" onclick="deleteEntry('${e.id}')">Delete</button></div>
+      </div>`;
+    }
+    function editEntry(id) {
+      const e = entries.find(x => x.id === id); if (!e) return;
+      openEntrySheet(e.type, new Date(e.event_at), e.is_backdated, e);
+    }
+
+    function renderSummary() {
+      const one = entriesOfType('one').sort((a,b)=> new Date(a.event_at)-new Date(b.event_at));
+      const countsByDay = [];
+      for (let i=6;i>=0;i--) {
+        const d = new Date(); d.setDate(d.getDate()-i);
+        countsByDay.push(one.filter(e => isInTrackingDay(e.event_at, d)).length);
+      }
+      const avgCount = countsByDay.reduce((a,b)=>a+b,0) / 7;
+      const lastTenOne = one.slice(-10);
+      const lastTenIntervals = getIntervals(lastTenOne);
+      const avgLastTenInterval = lastTenIntervals.length ? lastTenIntervals.reduce((a,b)=>a+b,0)/lastTenIntervals.length : null;
+      const thirtyAgo = new Date(); thirtyAgo.setDate(thirtyAgo.getDate() - 30);
+      const releases30 = entriesOfType('three').filter(e => new Date(e.event_at) >= thirtyAgo).length;
+
+      const timelineDate = summaryViewedDate || new Date();
+      const timelineEntries = visibleEntries()
+        .filter(e => isInTrackingDay(e.event_at, timelineDate))
+        .sort((a,b)=> new Date(a.event_at)-new Date(b.event_at));
+      const timeline = timelineEntries.length ? timelineEntries.map(e => {
+        const labels = entryLabels(e);
+        const note = e.notes ? `<div class="entry-note">${escapeHtml(e.notes)}</div>` : '';
+        const details = labels.length ? `<div class="${e.type === 'food' ? 'food-details' : 'entry-labels'}">${escapeHtml(labels.join(' · '))}</div>` : '';
+        return `<div class="timeline-row type-${e.type}"><div class="timeline-time">${formatTime(new Date(e.event_at))}</div><div class="timeline-main"><strong>${typeLabel(e.type)}</strong>${details}${note}</div></div>`;
+      }).join('') : `<div class="small">No entries logged for this day.</div>`;
+
+      const isToday = isSameTrackingDay(timelineDate, new Date());
+      $('#summaryScreen').innerHTML = `
+        <div class="stat-grid">
+          <div class="stat"><div class="value">${oneCountToday()}</div><div class="label">pees today</div></div>
+          <div class="stat"><div class="value">${avgCount.toFixed(1)}</div><div class="label">7-day pee average</div></div>
+          <div class="stat"><div class="value">${avgLastTenInterval ? avgLastTenInterval.toFixed(1)+'h' : '—'}</div><div class="label">avg interval, last 10 pees</div></div>
+          <div class="stat"><div class="value">${releases30}</div><div class="label">releases, last 30 days</div></div>
+        </div>
+        <div class="panel" style="margin-top:12px;">
+          <div class="summary-day-head">
+            <div class="summary-day-title">
+              <h2>${isToday ? 'Today' : formatDate(timelineDate)}</h2>
+              <div class="small">Timeline</div>
+            </div>
+            <button class="today-btn" onclick="goToCurrentSummaryDay()">Current Day</button>
+            <div class="arrow-row"><button onclick="changeSummaryDay(-1)">‹</button><button onclick="changeSummaryDay(1)">›</button></div>
+          </div>
+          <div class="timeline">${timeline}</div>
+        </div>
+      `;
+    }
+
+    function isSameTrackingDay(a, b) {
+      return startOfTrackingDay(a).getTime() === startOfTrackingDay(b).getTime();
+    }
+    function changeSummaryDay(delta) {
+      const d = new Date(summaryViewedDate || new Date());
+      d.setDate(d.getDate() + delta);
+      summaryViewedDate = d;
+      renderSummary();
+    }
+    function goToCurrentSummaryDay() {
+      summaryViewedDate = new Date();
+      renderSummary();
+    }
+
+    function getIntervals(sortedEntries) {
+      const sorted = [...sortedEntries].sort((a,b)=> new Date(a.event_at)-new Date(b.event_at));
+      const out = [];
+      for (let i=1; i<sorted.length; i++) out.push((new Date(sorted[i].event_at) - new Date(sorted[i-1].event_at))/36e5);
+      return out.filter(h => h >= 0);
+    }
+
+    function settingSection(id, title, body, openDefault=false) {
+      const isOpen = settings.openSections?.[id] ?? openDefault;
+      return `<div class="panel settings-section ${isOpen ? 'open' : ''}" id="section_${id}">
+        <button class="settings-header" onclick="toggleSettingsSection('${id}')"><h2>${title}</h2><span class="chev">${isOpen ? '−' : '+'}</span></button>
+        <div class="settings-body">${body}</div>
+      </div>`;
+    }
+    function toggleSettingsSection(id) {
+      settings.openSections = settings.openSections || {};
+      settings.openSections[id] = !(settings.openSections[id] ?? false);
+      saveSettings(); renderSettings();
+    }
+    function renderSettings() {
+      const hasConfig = !!(settings.supabaseUrl && settings.supabaseAnonKey);
+      const lastSync = settings.lastSyncAt ? new Date(settings.lastSyncAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'never';
+      const foodOptions = settings.foodQuickOptions || [];
+      $('#settingsScreen').innerHTML = `
+        ${settingSection('export', 'Export', `
+          <button class="save-btn" onclick="exportCsvPreset('all')">All</button>
+          <button class="secondary-btn" onclick="exportCsvPreset('year')">Previous Year</button>
+          <button class="secondary-btn" onclick="exportCsvPreset('30')">Previous 30 Days</button>
+          <button class="secondary-btn" onclick="exportCsvPreset('7')">Previous 7 Days</button>
+        `, true)}
+        ${settingSection('visiblelogs', 'Log Types', `
+          <div class="settings-row"><div><strong>Available types</strong><div class="small">Toggle visibility, add custom log types, or archive custom types. Existing data is preserved for CSV export.</div></div><button class="mini-btn" onclick="addCustomLogType()">+</button></div>
+          ${logScreenLabelsToggleRow()}
+          ${visibleLogToggleRow('one', 'Pee')}
+          ${visibleLogToggleRow('two', 'Poop')}
+          ${visibleLogToggleRow('three', 'Release')}
+          ${visibleLogToggleRow('food', 'Food/Drink')}
+          ${visibleLogToggleRow('feeling', 'Feeling')}
+          ${customLogTypeRows()}
+        `)}
+        ${settingSection('colors', 'Color Customization', `
+          <div class="small" style="margin-bottom:10px;">Customize app colors with hex codes. These apply immediately and are saved locally.</div>
+          <div class="list">${colorCustomizationRows()}</div>
+          <button class="danger-btn" onclick="restoreDefaultColors()">Restore Default Colors</button>
+        `)}
+        ${settingSection('foodquick', 'Food/Drink Quick Log', `
+          <div class="settings-row"><div><strong>Quick options</strong><div class="small">These appear when logging Food/Drink.</div></div><button class="mini-btn" onclick="addFoodQuickOption()">+</button></div>
+          <div class="list">${foodOptions.length ? foodOptions.map((opt, i) => `<div class="settings-row"><div>${escapeHtml(opt)}</div><button class="mini-btn danger" onclick="removeFoodQuickOption(${i})">Remove</button></div>`).join('') : '<div class="small">No quick options yet.</div>'}</div>
+        `)}
+        ${settingSection('cloud', 'Cloud backup', `
+          <div class="settings-row"><div><strong>Status</strong><div class="small">${hasConfig ? 'Supabase configured' : 'Paste your Supabase Project URL and anon public key.'}</div></div><span class="small">${hasConfig ? 'ready' : 'not connected'}</span></div>
+          <div class="settings-row"><div><strong>Last sync</strong><div class="small">${lastSync}</div></div></div>
+          <div class="sync-form">
+            <label>Project URL</label>
+            <input id="supabaseUrl" placeholder="https://your-project.supabase.co" value="${escapeHtml(settings.supabaseUrl || '')}">
+            <label>Anon public key</label>
+            <textarea id="supabaseAnonKey" placeholder="Paste anon public key">${escapeHtml(settings.supabaseAnonKey || '')}</textarea>
+            <button class="secondary-btn" onclick="saveCloudSettings()">Save Cloud Settings</button>
+            <label>Email</label>
+            <input id="syncEmail" type="email" autocomplete="email" placeholder="you@example.com" value="${escapeHtml(settings.syncEmail || '')}">
+            <label>Password</label>
+            <input id="syncPassword" type="password" autocomplete="current-password" placeholder="Password">
+            <div class="sync-actions">
+              <button class="secondary-btn" onclick="signUpCloud()">Sign Up</button>
+              <button class="secondary-btn" onclick="signInCloud()">Sign In</button>
+            </div>
+            <button class="save-btn" onclick="backupNow()">Backup Now</button>
+            <button class="secondary-btn" onclick="downloadFromCloud()">Download/Merge From Cloud</button>
+            <button class="danger-btn" onclick="signOutCloud()">Sign Out</button>
+          </div>
+          <div class="small" style="margin-top:12px;">Backup saves active and deleted entries so deletes can sync too. Data still saves locally first.</div>
+        `)}
+        ${settingSection('data', 'Data', `
+          <div class="settings-row"><div><strong>Entries</strong><div class="small">${visibleEntries().length} active, ${entries.filter(e=>e.deleted_at).length} deleted</div></div></div>
+          <button class="secondary-btn" onclick="seedDemoData()">Add Demo Data</button>
+          <button class="danger-btn" onclick="clearAllData()">Clear All Local Data</button>
+        `)}
+        ${settingSection('about', 'About', `<div class="small"><strong>V4.26.18</strong><br>Single-file local web app. Add this page to your iPhone Home Screen from Safari for app-like use.</div>`)}
+      `;
+    }
+    function logScreenLabelsToggleRow() {
+      const on = !!settings.showLogScreenLabels;
+      return `<button class="visible-log-card" onclick="toggleLogScreenLabels()">
+        <div><strong>Log screen labels</strong><div class="small">${on ? 'Labels shown above log cards' : 'Labels hidden on Log screen'}</div></div>
+        <span class="toggle-switch ${on ? 'on' : ''}" aria-hidden="true"></span>
+      </button>`;
+    }
+    function toggleLogScreenLabels() {
+      settings.showLogScreenLabels = !settings.showLogScreenLabels;
+      saveSettings(); render(); toast(`Log screen labels ${settings.showLogScreenLabels ? 'shown' : 'hidden'}`);
+    }
+    function pencilIcon() {
+      return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.8 2.8 0 0 0-4-4L4 16v4z"></path><path d="M13.5 6.5l4 4"></path></svg>`;
+    }
+    function visibleLogToggleRow(type, label) {
+      const on = isLogButtonVisible(type);
+      const next = !on;
+      const isCustom = isCustomType(type);
+      const colorDot = `<span class="custom-color-dot" style="background:${logTypeColor(type)}"></span>`;
+      if (isCustom) {
+        return `<div class="visible-log-card">
+          <div onclick="setLogButtonVisibility('${type}', ${next})" style="flex:1; min-width:0; cursor:pointer;">
+            <strong>${colorDot}${escapeHtml(label)}</strong>
+            <div class="small">${on ? 'Shown on Log screen' : 'Hidden from Log screen'}</div>
+          </div>
+          <div class="custom-actions">
+            <button class="edit-icon-btn" aria-label="Edit ${escapeHtml(label)}" onclick="event.stopPropagation(); openCustomLogTypeEditor('${type}')">${pencilIcon()}</button>
+            <button type="button" class="toggle-switch ${on ? 'on' : ''}" aria-label="${on ? 'Hide' : 'Show'} ${escapeHtml(label)}" onclick="event.stopPropagation(); setLogButtonVisibility('${type}', ${next})"></button>
+          </div>
+        </div>`;
+      }
+      return `<div class="visible-log-card">
+        <div onclick="setLogButtonVisibility('${type}', ${next})" style="flex:1; min-width:0; cursor:pointer;">
+          <strong>${colorDot}${escapeHtml(label)}</strong>
+          <div class="small">${on ? 'Shown on Log screen' : 'Hidden from Log screen'}</div>
+        </div>
+        <button type="button" class="toggle-switch ${on ? 'on' : ''}" aria-label="${on ? 'Hide' : 'Show'} ${escapeHtml(label)}" onclick="event.stopPropagation(); setLogButtonVisibility('${type}', ${next})"></button>
+      </div>`;
+    }
+    function normalizeVisibleLogButtons() {
+      const defaults = { one: true, two: true, three: true, food: true, feeling: true };
+      settings.visibleLogButtons = Object.assign(defaults, settings.visibleLogButtons || {});
+    }
+    function setLogButtonVisibility(type, visible) {
+      normalizeVisibleLogButtons();
+      settings.visibleLogButtons[type] = !!visible;
+      saveSettings();
+      render();
+      toast(`${typeLabel(type)} ${visible ? 'shown' : 'hidden'}`);
+    }
+    function toggleLogButtonVisibility(type) {
+      setLogButtonVisibility(type, !isLogButtonVisible(type));
+    }
+    function customLogTypeRows() {
+      const types = activeCustomTypes();
+      if (!types.length) return '';
+      return `<div class="custom-type-divider"></div><div class="custom-type-heading">Custom</div>${types.map(t => visibleLogToggleRow(t.id, t.label)).join('')}`;
+    }
+    function addCustomLogType() {
+      const value = prompt('Add custom log type');
+      if (!value || !value.trim()) return;
+      const label = value.trim();
+      settings.customLogTypes = settings.customLogTypes || [];
+      const id = 'custom_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+      settings.customLogTypes.push({ id, label, color: CUSTOM_LOG_COLORS[0].value, created_at: nowIso(), updated_at: nowIso(), deleted_at: null });
+      settings.visibleLogButtons = settings.visibleLogButtons || {};
+      settings.visibleLogButtons[id] = true;
+      saveSettings(); render(); toast('Log type added');
+    }
+    function openCustomLogTypeEditor(id) {
+      const item = customTypeById(id);
+      if (!item) return;
+      openSheet(`
+        <div class="sheet-head"><div><div class="sheet-title">Edit Log Type</div><div class="small">${escapeHtml(item.label)}</div></div><button class="icon-btn" onclick="closeSheet()">×</button></div>
+        <button class="secondary-btn" onclick="renameCustomLogType('${id}')">Rename</button>
+        <button class="secondary-btn" onclick="openLogTypeColorPicker('${id}')">Change Color</button>
+        <button class="danger-btn" onclick="deleteCustomLogType('${id}')">Delete Log Type</button>
+      `);
+    }
+    function renameCustomLogType(id) {
+      const item = (settings.customLogTypes || []).find(x => x.id === id);
+      if (!item) return;
+      const value = prompt('Rename log type', item.label);
+      if (!value || !value.trim()) return;
+      item.label = value.trim();
+      item.updated_at = nowIso();
+      saveSettings(); closeSheet(); render(); toast('Log type renamed');
+    }
+    function deleteCustomLogType(id) {
+      const item = (settings.customLogTypes || []).find(x => x.id === id);
+      if (!item) return;
+      if (!confirm(`Delete "${item.label}" from the Log screen? Existing entries will stay in exports.`)) return;
+      item.deleted_at = nowIso();
+      item.updated_at = nowIso();
+      settings.visibleLogButtons = settings.visibleLogButtons || {};
+      settings.visibleLogButtons[id] = false;
+      saveSettings(); closeSheet(); render(); toast('Log type deleted');
+    }
+    function openLogTypeColorPicker(id) {
+      const label = typeLabel(id);
+      const currentColor = logTypeColor(id);
+      openSheet(`
+        <div class="sheet-head"><div><div class="sheet-title">Color</div><div class="small">${escapeHtml(label)}</div></div><button class="icon-btn" onclick="closeSheet()">×</button></div>
+        <div class="custom-color-grid">
+          ${CUSTOM_LOG_COLORS.map(c => `<button class="color-choice" style="background:${c.value}" aria-label="${c.name}" onclick="setLogTypeColor('${id}', '${c.value}')"></button>`).join('')}
+        </div>
+
+        <div class="section-label">Custom Hex</div>
+        <div class="hex-color-row">
+          <div id="customHexPreview" class="hex-preview" style="background:${currentColor}"></div>
+          <input id="customHexInput" value="${escapeHtml(currentColor)}" placeholder="#6f8f73" maxlength="7" oninput="updateHexPreview()">
+        </div>
+        <button class="save-btn" onclick="applyCustomHex('${id}')">Apply Hex Color</button>
+
+        ${isCustomType(id) ? `<button class="secondary-btn" onclick="openCustomLogTypeEditor('${id}')">Back</button>` : ''}
+      `);
+    }
+    function normalizeHex(value) {
+      value = String(value || '').trim();
+      if (!value) return '';
+      if (!value.startsWith('#')) value = '#' + value;
+      return value;
+    }
+    function isValidHex(value) {
+      return /^#([0-9A-F]{3}|[0-9A-F]{6})$/i.test(value);
+    }
+    function updateHexPreview() {
+      const input = document.getElementById('customHexInput');
+      const preview = document.getElementById('customHexPreview');
+      if (!input || !preview) return;
+      const value = normalizeHex(input.value);
+      if (isValidHex(value)) {
+        preview.style.background = value;
+        input.style.borderColor = 'var(--accent-2)';
+      } else {
+        preview.style.background = 'var(--panel-2)';
+        input.style.borderColor = 'rgba(168,68,68,.75)';
+      }
+    }
+    function applyCustomHex(id) {
+      const input = document.getElementById('customHexInput');
+      if (!input) return;
+      const value = normalizeHex(input.value);
+      if (!isValidHex(value)) {
+        toast('Invalid hex code');
+        return;
+      }
+      setLogTypeColor(id, value);
+    }
+
+    function openCustomColorPicker(id) {
+      openLogTypeColorPicker(id);
+    }
+    function setLogTypeColor(id, color) {
+      settings.logTypeColors = settings.logTypeColors || {};
+      settings.logTypeColors[id] = color;
+      const item = customTypeById(id);
+      if (item) {
+        item.color = color;
+        item.updated_at = nowIso();
+      }
+      saveSettings(); applyAppColors(); closeSheet(); render(); toast('Color updated');
+    }
+    function setCustomLogTypeColor(id, color) {
+      setLogTypeColor(id, color);
+    }
+
+    function colorCustomizationRows() {
+      const rows = COLOR_CONTROLS.map(([key, label]) => {
+        const value = appColor(key);
+        return `<div class="color-custom-row">
+          <label for="color_${key}">${escapeHtml(label)}</label>
+          <div id="swatch_${key}" class="color-custom-swatch" style="background:${escapeHtml(value)}"></div>
+          <input id="color_${key}" value="${escapeHtml(value)}" maxlength="7" oninput="previewAppColor('${key}')" onchange="setAppColor('${key}')">
+        </div>`;
+      }).join('');
+      const customRows = activeCustomTypes().length ? `<div class="custom-type-divider"></div><div class="custom-type-heading">Custom Log Types</div>` + activeCustomTypes().map(t => {
+        const value = logTypeColor(t.id);
+        return `<div class="color-custom-row">
+          <label for="color_${t.id}">${escapeHtml(t.label)}</label>
+          <div id="swatch_${t.id}" class="color-custom-swatch" style="background:${escapeHtml(value)}"></div>
+          <input id="color_${t.id}" value="${escapeHtml(value)}" maxlength="7" oninput="previewLogTypeColor('${t.id}')" onchange="setLogTypeColorFromInput('${t.id}')">
+        </div>`;
+      }).join('') : '';
+      return rows + customRows;
+    }
+    function previewAppColor(key) {
+      const input = document.getElementById(`color_${key}`);
+      const swatch = document.getElementById(`swatch_${key}`);
+      if (!input || !swatch) return;
+      const value = normalizeHex(input.value);
+      if (isValidHex(value)) {
+        swatch.style.background = value;
+        input.style.borderColor = 'var(--accent-2)';
+      } else {
+        input.style.borderColor = 'rgba(168,68,68,.75)';
+      }
+    }
+    function setAppColor(key) {
+      const input = document.getElementById(`color_${key}`);
+      if (!input) return;
+      const value = normalizeHex(input.value);
+      if (!isValidHex(value)) {
+        toast('Invalid hex code');
+        return;
+      }
+      settings.appColors = settings.appColors || {};
+      settings.appColors[key] = value;
+      input.value = value;
+      saveSettings();
+      applyAppColors();
+      render();
+      toast('Color updated');
+    }
+    function previewLogTypeColor(id) {
+      const input = document.getElementById(`color_${id}`);
+      const swatch = document.getElementById(`swatch_${id}`);
+      if (!input || !swatch) return;
+      const value = normalizeHex(input.value);
+      if (isValidHex(value)) {
+        swatch.style.background = value;
+        input.style.borderColor = 'var(--accent-2)';
+      } else {
+        input.style.borderColor = 'rgba(168,68,68,.75)';
+      }
+    }
+    function setLogTypeColorFromInput(id) {
+      const input = document.getElementById(`color_${id}`);
+      if (!input) return;
+      const value = normalizeHex(input.value);
+      if (!isValidHex(value)) {
+        toast('Invalid hex code');
+        return;
+      }
+      setLogTypeColor(id, value);
+    }
+    function restoreDefaultColors() {
+      if (!confirm('Restore all default colors?')) return;
+      settings.appColors = {};
+      settings.logTypeColors = {};
+      settings.customLogTypes = (settings.customLogTypes || []).map(t => ({ ...t, color: CUSTOM_LOG_COLORS[0].value }));
+      saveSettings();
+      applyAppColors();
+      render();
+      toast('Default colors restored');
+    }
+
+    function addFoodQuickOption() {
+      const value = prompt('Add Food/Drink quick option');
+      if (!value || !value.trim()) return;
+      settings.foodQuickOptions = settings.foodQuickOptions || [];
+      const clean = value.trim();
+      if (!settings.foodQuickOptions.includes(clean)) settings.foodQuickOptions.push(clean);
+      saveSettings(); renderSettings(); toast('Quick option added');
+    }
+    function removeFoodQuickOption(index) {
+      settings.foodQuickOptions = settings.foodQuickOptions || [];
+      settings.foodQuickOptions.splice(index, 1);
+      saveSettings(); renderSettings(); toast('Quick option removed');
+    }
+
+    function saveCloudSettings() {
+      settings.supabaseUrl = $('#supabaseUrl').value.trim();
+      settings.supabaseAnonKey = $('#supabaseAnonKey').value.trim();
+      settings.syncEmail = $('#syncEmail')?.value.trim() || settings.syncEmail || '';
+      saveSettings(); updateSyncChip(); renderSettings(); toast('Cloud settings saved');
+    }
+    async function requireSupabase() {
+      const client = getSupabaseClient();
+      if (!client) { toast('Add Supabase settings first'); return null; }
+      return client;
+    }
+    function readLoginFields() {
+      settings.syncEmail = $('#syncEmail')?.value.trim() || settings.syncEmail || '';
+      saveSettings();
+      return { email: settings.syncEmail, password: $('#syncPassword')?.value || '' };
+    }
+    async function signUpCloud() {
+      saveCloudSettings();
+      const client = await requireSupabase(); if (!client) return;
+      const { email, password } = readLoginFields();
+      if (!email || !password) { toast('Enter email and password'); return; }
+      const { error } = await client.auth.signUp({ email, password });
+      if (error) toast(error.message); else toast('Sign-up sent/successful');
+    }
+    async function signInCloud() {
+      saveCloudSettings();
+      const client = await requireSupabase(); if (!client) return;
+      const { email, password } = readLoginFields();
+      if (!email || !password) { toast('Enter email and password'); return; }
+      const { error } = await client.auth.signInWithPassword({ email, password });
+      if (error) toast(error.message); else { toast('Signed in'); await backupNow(); }
+    }
+    async function signOutCloud() {
+      const client = await requireSupabase(); if (!client) return;
+      await client.auth.signOut(); toast('Signed out');
+    }
+    function cloudPayload(entry, userId) {
+      return {
+        id: entry.id,
+        user_id: userId,
+        type: entry.type,
+        event_at: entry.event_at,
+        created_at: entry.created_at,
+        updated_at: entry.updated_at,
+        is_backdated: !!entry.is_backdated,
+        notes: entry.notes || '',
+        one_urgent: !!entry.one_urgent,
+        one_uncomfortable: !!entry.one_uncomfortable,
+        one_volume_low: !!entry.one_volume_low,
+        one_volume_standard: !!entry.one_volume_standard,
+        one_volume_high: !!entry.one_volume_high,
+        two_urgent: !!entry.two_urgent,
+        two_uncomfortable: !!entry.two_uncomfortable,
+        two_solid: !!entry.two_solid,
+        two_loose: !!entry.two_loose,
+        two_liquid: !!entry.two_liquid,
+        feeling_rating: entry.feeling_rating || null,
+        food_items: Array.isArray(entry.food_items) ? entry.food_items.join('|') : '',
+        sync_status: 'synced',
+        deleted_at: entry.deleted_at || null
+      };
+    }
+    async function getCloudUser(client) {
+      const { data, error } = await client.auth.getUser();
+      if (error || !data?.user) { toast('Sign in first'); return null; }
+      return data.user;
+    }
+    async function backupNow() {
+      const client = await requireSupabase(); if (!client) return;
+      const user = await getCloudUser(client); if (!user) return;
+      if (!entries.length) { toast('No local entries to backup'); return; }
+      const payload = entries.map(e => cloudPayload(e, user.id));
+      let { error } = await client.from('entries').upsert(payload, { onConflict: 'id' });
+      if (error && String(error.message || '').includes('food_items')) {
+        const fallback = payload.map(({ food_items, ...rest }) => rest);
+        const retry = await client.from('entries').upsert(fallback, { onConflict: 'id' });
+        error = retry.error;
+      }
+      if (error) { toast(error.message); return; }
+      entries = entries.map(e => ({ ...e, sync_status: 'synced' }));
+      settings.lastSyncAt = nowIso(); saveSettings(); saveEntries(); render(); toast('Backup complete');
+    }
+    async function autoBackupPending() {
+      const pending = entries.some(e => e.sync_status === 'pending');
+      if (!pending || !settings.supabaseUrl || !settings.supabaseAnonKey || !navigator.onLine) return;
+      try { await backupNow(); } catch (e) { console.warn(e); }
+    }
+    async function downloadFromCloud() {
+      const client = await requireSupabase(); if (!client) return;
+      const user = await getCloudUser(client); if (!user) return;
+      const { data, error } = await client.from('entries').select('*').eq('user_id', user.id);
+      if (error) { toast(error.message); return; }
+      const byId = new Map(entries.map(e => [e.id, e]));
+      for (const remote of (data || [])) {
+        const local = byId.get(remote.id);
+        if (!local || new Date(remote.updated_at) > new Date(local.updated_at || 0)) {
+          byId.set(remote.id, { ...blankEntryFields(), ...remote, food_items: Array.isArray(remote.food_items) ? remote.food_items : (remote.food_items ? String(remote.food_items).split('|').filter(Boolean) : []), sync_status: 'synced' });
+        }
+      }
+      entries = Array.from(byId.values());
+      settings.lastSyncAt = nowIso(); saveSettings(); saveEntries(); render(); toast('Cloud data merged');
+    }
+
+    function csvEscape(value) {
+      if (value === null || value === undefined) return '';
+      const s = String(value);
+      if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    }
+    function exportCsvPreset(preset='all') {
+      const now = new Date();
+      let start = null;
+      if (preset === 'year') {
+        start = new Date(now); start.setFullYear(start.getFullYear() - 1);
+      } else if (preset === '30') {
+        start = new Date(now); start.setDate(start.getDate() - 30);
+      } else if (preset === '7') {
+        start = new Date(now); start.setDate(start.getDate() - 7);
+      }
+      exportCsv({ start, label: preset });
+    }
+
+    function exportCsv(options={}) {
+      const start = options.start || null;
+      const label = options.label || 'all';
+      let data = visibleEntries().sort((a,b)=> new Date(a.event_at)-new Date(b.event_at));
+      if (start) data = data.filter(e => new Date(e.event_at) >= start);
+      const cols = ['id','type','type_label_at_entry','type_current_label','custom_type_deleted_at','custom_type_color','event_at','created_at','updated_at','is_backdated','notes','one_urgent','one_uncomfortable','one_volume_low','one_volume_standard','one_volume_high','two_urgent','two_uncomfortable','two_solid','two_loose','two_liquid','feeling_rating','food_items','sync_status','deleted_at'];
+      const csv = [cols.join(',')].concat(data.map(row => cols.map(c => {
+        if (c === 'type_label_at_entry') return csvEscape(row.type_label || typeLabel(row.type));
+        if (c === 'type_current_label') return csvEscape(typeLabel(row.type));
+        if (c === 'custom_type_deleted_at') {
+          const custom = (settings.customLogTypes || []).find(x => x.id === row.type);
+          return csvEscape(custom?.deleted_at || row.type_deleted_at || '');
+        }
+        if (c === 'custom_type_color') {
+          const custom = (settings.customLogTypes || []).find(x => x.id === row.type);
+          return csvEscape(logTypeColor(row.type) || '');
+        }
+        return csvEscape(Array.isArray(row[c]) ? row[c].join('|') : row[c]);
+      }).join(','))).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `tracker_export_${label}_${dateOnlyLocal(new Date())}.csv`;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      toast('CSV exported');
+    }
+
+    function seedDemoData() {
+      const now = new Date();
+      const demo = [];
+      for (let i=0;i<24;i++) {
+        const d = new Date(now); d.setDate(now.getDate() - Math.floor(i/3)); d.setHours(7 + (i%5)*3, Math.floor(Math.random()*50), 0, 0);
+        demo.push({ ...blankEntryFields(), id: uuid(), type: 'one', event_at: d.toISOString(), created_at: nowIso(), updated_at: nowIso(), is_backdated: false, notes: '', one_volume_standard: true, sync_status: 'pending', deleted_at: null });
+      }
+      entries.push(...demo); saveEntries(); render(); toast('Demo data added');
+    }
+    function clearAllData() {
+      if (!confirm('Clear all local data?')) return;
+      entries = []; saveEntries(); render(); toast('Cleared');
+    }
+    function toast(msg) {
+      const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+      setTimeout(()=>t.classList.remove('show'), 1700);
+    }
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+    }
+
+    window.addEventListener('online', autoBackupPending);
+
+    $$('.nav button').forEach(btn => btn.addEventListener('click', () => { activeTab = btn.dataset.nav; render(); }));
+
+    // Lightweight offline-friendly behavior: this single file runs without internet once opened/saved.
+    // True PWA install/service worker needs separate hosted files or a generated blob worker, so cloud/PWA sync is intentionally scaffolded.
+    render();
+  </script>
+</body>
+</html>
