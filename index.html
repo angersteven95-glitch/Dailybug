@@ -467,6 +467,12 @@
     .settings-row:last-child { border-bottom: 0; }
 
     .toggle-row { cursor: pointer; }
+
+    button.toggle-switch {
+      padding: 0;
+      min-width: 48px;
+      cursor: pointer;
+    }
     .toggle-switch {
       width: 48px;
       height: 28px;
@@ -1044,6 +1050,14 @@
             ${pill('two_loose', 'Loose', entry?.two_loose)}
             ${pill('two_liquid', 'Liquid', entry?.two_liquid)}
           </div>`;
+      } else if (type === 'food') {
+        const quickOptions = settings.foodQuickOptions || [];
+        const selectedFood = Array.isArray(entry?.food_items) ? entry.food_items : [];
+        body = quickOptions.length ? `
+          <div class="section-label">Quick Log</div>
+          <div class="pill-grid">
+            ${quickOptions.map((opt, i) => pill(`food_item_${i}`, opt, selectedFood.includes(opt))).join('')}
+          </div>` : `<div class="small" style="margin-top:8px;">No Food/Drink quick options yet. Add them in Settings.</div>`;
       } else if (type === 'feeling') {
         const val = ({ real_bad: 'very_bad', somewhat_bad: 'bad' }[entry?.feeling_rating] || entry?.feeling_rating || '');
         body = `
@@ -1461,15 +1475,18 @@
             <div class="small">${on ? 'Shown on Log screen' : 'Hidden from Log screen'}</div>
           </div>
           <div class="custom-actions">
-            <button class="edit-icon-btn" aria-label="Edit ${escapeHtml(label)}" onclick="openCustomLogTypeEditor('${type}')">${pencilIcon()}</button>
-            <button class="toggle-switch ${on ? 'on' : ''}" aria-label="${on ? 'Hide' : 'Show'} ${escapeHtml(label)}" onclick="toggleLogButtonVisibility('${type}')"></button>
+            <button class="edit-icon-btn" aria-label="Edit ${escapeHtml(label)}" onclick="event.stopPropagation(); openCustomLogTypeEditor('${type}')">${pencilIcon()}</button>
+            <button type="button" class="toggle-switch ${on ? 'on' : ''}" aria-label="${on ? 'Hide' : 'Show'} ${escapeHtml(label)}" onclick="event.stopPropagation(); toggleLogButtonVisibility('${type}')"></button>
           </div>
         </div>`;
       }
-      return `<button class="visible-log-card" onclick="toggleLogButtonVisibility('${type}')">
-        <div><strong>${escapeHtml(label)}</strong><div class="small">${on ? 'Shown on Log screen' : 'Hidden from Log screen'}</div></div>
-        <span class="toggle-switch ${on ? 'on' : ''}" aria-hidden="true"></span>
-      </button>`;
+      return `<div class="visible-log-card">
+        <div onclick="toggleLogButtonVisibility('${type}')" style="flex:1; min-width:0; cursor:pointer;">
+          <strong>${escapeHtml(label)}</strong>
+          <div class="small">${on ? 'Shown on Log screen' : 'Hidden from Log screen'}</div>
+        </div>
+        <button type="button" class="toggle-switch ${on ? 'on' : ''}" aria-label="${on ? 'Hide' : 'Show'} ${escapeHtml(label)}" onclick="event.stopPropagation(); toggleLogButtonVisibility('${type}')"></button>
+      </div>`;
     }
     function toggleLogButtonVisibility(type) {
       settings.visibleLogButtons = Object.assign({ one: true, two: true, three: true, food: true, feeling: true }, settings.visibleLogButtons || {});
