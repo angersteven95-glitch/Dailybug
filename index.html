@@ -130,6 +130,38 @@
     .card-food .right { background: var(--food); color: #101010; }
     .card-feeling .fullbtn { background: var(--feeling); }
 
+    .tracker-card.log-colored {
+      background: var(--custom-log-color);
+      color: var(--custom-log-text, #f4f4f4);
+      border-color: var(--custom-log-color);
+    }
+    .tracker-card.log-colored .track-part {
+      background: transparent !important;
+      color: inherit !important;
+    }
+    .tracker-card.log-colored .track-part.left {
+      background: rgba(0,0,0,.14) !important;
+      border-right-color: rgba(255,255,255,.22);
+    }
+    .tracker-card.log-colored .track-part.right::after,
+    .tracker-card.log-colored .track-part.fullbtn::after {
+      display: none;
+    }
+    body.theme-outline .tracker-card.log-colored {
+      background: transparent !important;
+      color: var(--custom-log-color) !important;
+      border: 2px solid var(--custom-log-color);
+      box-shadow: none;
+    }
+    body.theme-outline .tracker-card.log-colored .track-part.left {
+      background: transparent !important;
+      border-right-color: var(--custom-log-color);
+    }
+    body.theme-outline .tracker-card.log-colored .track-now-label {
+      opacity: .78;
+      color: var(--custom-log-color);
+    }
+
     .rewind-icon { width: 34px; height: 34px; opacity: .88; }
     .track-now-label { font-size: 13px; font-weight: 700; opacity: .34; letter-spacing: .08em; text-transform: uppercase; }
 
@@ -141,7 +173,7 @@
       width: 100%;
       max-width: 520px;
       padding: 10px 12px calc(10px + var(--safe-bottom));
-      background: linear-gradient(to top, rgba(16,16,16,.98), rgba(16,16,16,.86));
+      background: var(--nav-bg);
       backdrop-filter: blur(14px);
       border-top: 1px solid rgba(255,255,255,.06);
       display: grid;
@@ -169,7 +201,7 @@
     }
     .panel h2, .panel h3 { margin: 0 0 12px; letter-spacing: -0.02em; }
     .panel h2 { font-size: 22px; }
-    .panel h3 { font-size: 17px; color: #e7e7e7; }
+    .panel h3 { font-size: 17px; color: var(--text); }
     .small { color: var(--muted); font-size: 13px; line-height: 1.4; }
 
     .sheet-backdrop {
@@ -191,7 +223,8 @@
       max-width: 520px;
       max-height: 90vh;
       overflow: auto;
-      background: #171717;
+      background: var(--panel);
+      color: var(--text);
       border-radius: 28px 28px 0 0;
       border: 1px solid var(--line);
       padding: 12px 16px calc(18px + var(--safe-bottom));
@@ -200,7 +233,7 @@
       box-shadow: 0 -20px 60px rgba(0,0,0,.55);
     }
     .sheet.show { transform: translate(-50%, 0); }
-    .sheet-handle { width: 48px; height: 5px; border-radius: 99px; background: #4a4a4a; margin: 2px auto 16px; }
+    .sheet-handle { width: 48px; height: 5px; border-radius: 99px; background: var(--line); margin: 2px auto 16px; }
     .sheet-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; margin-bottom: 12px; }
     .sheet-title { font-size: 24px; font-weight: 750; letter-spacing: -0.03em; }
     .icon-btn {
@@ -402,8 +435,14 @@
     .entry-title { font-weight: 800; }
     .entry-sub { color: var(--muted); font-size: 12px; margin-top: 3px; overflow-wrap: anywhere; }
     .row-actions { display: flex; gap: 8px; }
-    .mini-btn { background: #111; color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; font-size: 12px; }
+    .mini-btn { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; font-size: 12px; }
+    .add-btn { width: 42px; height: 42px; border-radius: 14px; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; line-height: 1; font-weight: 800; background: var(--panel-2); color: var(--text); border: 1px solid var(--line); flex: 0 0 auto; }
     .mini-btn.danger { color: #ffb3b3; }
+    .mini-btn:disabled { opacity: .38; cursor: default; }
+    .quick-option-row { align-items: center; }
+    .quick-option-label { min-width: 0; overflow-wrap: anywhere; font-weight: 700; }
+    .quick-option-actions { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+    .quick-move-btn { min-width: 36px; padding: 8px 0; font-size: 15px; font-weight: 900; }
 
 
     .legend-item.low-key::before,
@@ -446,7 +485,7 @@
 
     .summary-day-head {
       display: grid;
-      grid-template-columns: 1fr auto auto;
+      grid-template-columns: 1fr auto auto auto auto;
       align-items: center;
       gap: 8px;
       margin-bottom: 10px;
@@ -728,6 +767,47 @@
       margin-right: 7px;
       vertical-align: -3px;
     }
+    .theme-option-card {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      margin-top: 10px;
+      text-align: left;
+    }
+    .theme-option-card.active {
+      border-color: var(--accent-2);
+      box-shadow: 0 0 0 2px rgba(228,168,91,.16);
+    }
+    .theme-preview {
+      width: 54px;
+      height: 34px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      overflow: hidden;
+    }
+    .theme-preview span:first-child { background: var(--preview-bg); }
+    .theme-preview span:last-child { background: var(--preview-card); border-left: 1px solid var(--preview-line); }
+    .theme-preview.outline span:last-child { background: transparent; box-shadow: inset 0 0 0 2px var(--preview-accent); }
+    .entry-row.log-entry-colored, .timeline-row.log-entry-colored {
+      background: var(--panel-2) !important;
+      border-color: var(--entry-color) !important;
+    }
+    body.theme-outline .entry-row.log-entry-colored,
+    body.theme-outline .timeline-row.log-entry-colored {
+      background: transparent !important;
+      border-width: 2px;
+      border-color: var(--entry-color) !important;
+      box-shadow: none;
+    }
     .range { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .toast {
       position: fixed;
@@ -748,8 +828,69 @@
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+    #settingsScreen .panel {
+      box-shadow: none;
+      padding: 14px;
+      margin: 10px 0;
+    }
+    #settingsScreen .panel h2 {
+      font-size: 19px;
+      letter-spacing: -0.015em;
+    }
+    #settingsScreen .settings-row {
+      padding: 11px 0;
+    }
+    .log-card-dot {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 11px;
+      height: 11px;
+      border-radius: 999px;
+      background: var(--custom-log-text, #fff);
+      opacity: .82;
+      border: 1px solid rgba(255,255,255,.28);
+      z-index: 2;
+      pointer-events: none;
+    }
+    body.theme-outline .log-card-dot {
+      background: var(--custom-log-color);
+      border-color: var(--custom-log-color);
+      opacity: 1;
+    }
+    body.theme-light .nav {
+      padding: 8px 12px calc(8px + var(--safe-bottom));
+      border-top-color: var(--line);
+      box-shadow: 0 -8px 22px rgba(0,0,0,.06);
+    }
+    body.theme-light .nav button {
+      border-radius: 13px;
+      padding: 8px 5px;
+      font-size: 11px;
+    }
+    body.theme-light .nav button.active {
+      color: #171717;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 18px 10px;
+    }
+    .empty-state h3 {
+      margin: 0 0 6px;
+      font-size: 17px;
+    }
+    .daily-note-box {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      margin: 10px 0 12px;
+    }
+    .daily-note-box strong { display:block; margin-bottom:4px; }
+
+
     @media (min-width: 700px) {
-      body { background: radial-gradient(circle at top, #1d1d1d, #0d0d0d); }
+      body { background: var(--bg); }
       .app { padding-top: 28px; }
     }
   </style>
@@ -788,13 +929,16 @@
     settings.visibleLogButtons = Object.assign({ one: true, two: true, three: true, food: true, feeling: true }, settings.visibleLogButtons || {});
     settings.customLogTypes = settings.customLogTypes || [];
     settings.appColors = settings.appColors || {};
+    settings.dailyNotes = settings.dailyNotes || {};
     if (settings.showLogScreenLabels === undefined) settings.showLogScreenLabels = false;
-    applyAppColors();
+    if (settings.showLogElapsedSincePrevious === undefined) settings.showLogElapsedSincePrevious = true;
+    if (!settings.colorTheme) settings.colorTheme = 'dark';
     let activeTab = 'log';
     let viewedMonth = new Date();
     let summaryViewedDate = new Date();
     let calendarMode = 'pees';
     let editingEntryId = null;
+    let entryIndexCache = null;
 
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -820,6 +964,7 @@
       return window.supabase.createClient(settings.supabaseUrl, settings.supabaseAnonKey);
     }
     function saveEntries() {
+      invalidateEntryIndex();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
       updateSyncChip();
     }
@@ -859,10 +1004,33 @@
       const e = endOfTrackingDay(baseDate);
       return d >= s && d < e;
     }
-    function visibleEntries() { return entries.filter(e => !e.deleted_at); }
-    function entriesOfType(type) { return visibleEntries().filter(e => e.type === type); }
+    function trackingDayKey(date) {
+      return dateOnlyLocal(startOfTrackingDay(date));
+    }
+    function invalidateEntryIndex() {
+      entryIndexCache = null;
+    }
+    function getEntryIndex() {
+      if (entryIndexCache) return entryIndexCache;
+      const visible = entries.filter(e => !e.deleted_at);
+      const byType = {};
+      const byTrackingDay = {};
+      visible.forEach(e => {
+        (byType[e.type] ||= []).push(e);
+        const d = new Date(e.event_at);
+        if (!Number.isNaN(d.getTime())) (byTrackingDay[trackingDayKey(d)] ||= []).push(e);
+      });
+      Object.values(byType).forEach(list => list.sort((a,b) => new Date(a.event_at) - new Date(b.event_at)));
+      Object.values(byTrackingDay).forEach(list => list.sort((a,b) => new Date(a.event_at) - new Date(b.event_at)));
+      entryIndexCache = { visible, byType, byTrackingDay };
+      return entryIndexCache;
+    }
+    function visibleEntries() { return getEntryIndex().visible; }
+    function entriesOfType(type) { return getEntryIndex().byType[type] || []; }
+    function entriesForTrackingDay(date) { return getEntryIndex().byTrackingDay[trackingDayKey(date)] || []; }
     function latestEntry(type) {
-      return entriesOfType(type).sort((a,b) => new Date(b.event_at) - new Date(a.event_at))[0] || null;
+      const list = entriesOfType(type);
+      return list.length ? list[list.length - 1] : null;
     }
     function formatSince(type) {
       const last = latestEntry(type);
@@ -872,10 +1040,10 @@
       return `${Math.max(0, hours / 24).toFixed(1)}d`;
     }
     function oneCountToday() {
-      return entriesOfType('one').filter(e => isInTrackingDay(e.event_at, new Date())).length;
+      return entriesForTrackingDay(new Date()).filter(e => e.type === 'one').length;
     }
     function feelingStatusToday() {
-      return entriesOfType('feeling').some(e => isInTrackingDay(e.event_at, new Date())) ? 'logged' : 'not yet logged';
+      return entriesForTrackingDay(new Date()).some(e => e.type === 'feeling') ? 'logged' : 'not yet logged';
     }
     function typeLabel(t) {
       const builtIn = { one: 'Pee', two: 'Poop', three: 'Release', food: 'Food/Drink', feeling: 'Feeling' };
@@ -903,65 +1071,92 @@
       { name: 'Deep Plum', value: '#75628c' },
       { name: 'Moss', value: '#5f8060' }
     ];
-    const DEFAULT_APP_COLORS = {
-      bg: '#101010',
-      panel: '#171717',
-      panel2: '#202020',
-      panel3: '#292929',
-      text: '#eeeeee',
-      muted: '#a7a7a7',
-      faint: '#6f6f6f',
-      line: '#333333',
-      accent: '#c17f32',
-      accent2: '#e4a85b',
-      green: '#4f8f5b',
-      orange: '#b66d2f',
-      red: '#a84444',
-      navBg: '#161616',
-      inputBg: '#111111',
-      todayBg: '#d8d8d8',
+    const DEFAULT_LOG_TYPE_COLORS = {
       one: '#80683d',
       two: '#5a4a3f',
       three: '#bfc2c4',
       food: '#7f9a77',
       feeling: '#343434'
     };
-    const COLOR_CONTROLS = [
-      ['bg','App background'], ['panel','Cards / panels'], ['panel2','Secondary cards'], ['panel3','Tertiary surfaces'],
-      ['text','Primary text'], ['muted','Muted text'], ['faint','Faint text'], ['line','Borders / divider lines'],
-      ['accent','Main accent'], ['accent2','Button accent'], ['green','Calendar green'], ['orange','Calendar orange'],
-      ['red','Calendar red'], ['navBg','Bottom navigation'], ['inputBg','Inputs / text boxes'], ['todayBg','Current day highlight'],
-      ['one','Pee default'], ['two','Poop default'], ['three','Release default'], ['food','Food/Drink default'], ['feeling','Feeling default']
-    ];
+    const COLOR_THEMES = {
+      dark: {
+        label: 'Dark',
+        description: 'Current dark charcoal look with solid log cards.',
+        colors: {
+          bg: '#101010', panel: '#171717', panel2: '#202020', panel3: '#292929',
+          text: '#eeeeee', muted: '#a7a7a7', faint: '#6f6f6f', line: '#333333',
+          accent: '#c17f32', accent2: '#e4a85b', green: '#4f8f5b', orange: '#b66d2f', red: '#a84444',
+          navBg: '#161616', inputBg: '#111111', todayBg: '#d8d8d8'
+        },
+        outline: false
+      },
+      light: {
+        label: 'Light',
+        description: 'Soft warm white and light gray interface with solid log cards.',
+        colors: {
+          bg: '#efeee9', panel: '#f8f7f3', panel2: '#e7e4dc', panel3: '#d8d4ca',
+          text: '#171717', muted: '#67635c', faint: '#8a857d', line: '#cbc6bc',
+          accent: '#b77a34', accent2: '#d69a48', green: '#4f8f5b', orange: '#b66d2f', red: '#a84444',
+          navBg: '#ebe8e1', inputBg: '#fbfaf6', todayBg: '#ffffff'
+        },
+        outline: false
+      },
+      darkOutline: {
+        label: 'Dark outline',
+        description: 'Dark interface with log and entry cards outlined in each log type color.',
+        colors: {
+          bg: '#101010', panel: '#171717', panel2: '#202020', panel3: '#292929',
+          text: '#eeeeee', muted: '#a7a7a7', faint: '#6f6f6f', line: '#333333',
+          accent: '#c17f32', accent2: '#e4a85b', green: '#4f8f5b', orange: '#b66d2f', red: '#a84444',
+          navBg: '#161616', inputBg: '#111111', todayBg: '#d8d8d8'
+        },
+        outline: true
+      },
+      lightOutline: {
+        label: 'Light outline',
+        description: 'Light interface with log and entry cards outlined in each log type color.',
+        colors: {
+          bg: '#efeee9', panel: '#f8f7f3', panel2: '#e7e4dc', panel3: '#d8d4ca',
+          text: '#171717', muted: '#67635c', faint: '#8a857d', line: '#cbc6bc',
+          accent: '#b77a34', accent2: '#d69a48', green: '#4f8f5b', orange: '#b66d2f', red: '#a84444',
+          navBg: '#ebe8e1', inputBg: '#fbfaf6', todayBg: '#ffffff'
+        },
+        outline: true
+      }
+    };
     const COLOR_VAR_MAP = {
       bg: '--bg', panel: '--panel', panel2: '--panel-2', panel3: '--panel-3', text: '--text',
       muted: '--muted', faint: '--faint', line: '--line', accent: '--accent', accent2: '--accent-2',
-      green: '--green', orange: '--orange', red: '--red', one: '--one', two: '--two', three: '--three',
-      food: '--food', feeling: '--feeling'
+      green: '--green', orange: '--orange', red: '--red'
     };
+    function currentTheme() {
+      return COLOR_THEMES[settings.colorTheme] || COLOR_THEMES.dark;
+    }
     function appColor(key) {
-      return settings.appColors?.[key] || DEFAULT_APP_COLORS[key] || '#777777';
+      return currentTheme().colors[key] || COLOR_THEMES.dark.colors[key] || '#777777';
     }
     function applyAppColors() {
       const root = document.documentElement;
-      const colors = Object.assign({}, DEFAULT_APP_COLORS, settings.appColors || {});
+      const theme = currentTheme();
+      const colors = theme.colors;
       Object.entries(COLOR_VAR_MAP).forEach(([key, cssVar]) => root.style.setProperty(cssVar, colors[key]));
       root.style.setProperty('--nav-bg', colors.navBg);
       root.style.setProperty('--input-bg', colors.inputBg);
       root.style.setProperty('--today-bg', colors.todayBg);
+      root.style.setProperty('--one', logTypeColor('one'));
+      root.style.setProperty('--two', logTypeColor('two'));
+      root.style.setProperty('--three', logTypeColor('three'));
+      root.style.setProperty('--food', logTypeColor('food'));
+      root.style.setProperty('--feeling', logTypeColor('feeling'));
+      document.body.classList.toggle('theme-outline', !!theme.outline);
+      document.body.classList.toggle('theme-light', settings.colorTheme === 'light' || settings.colorTheme === 'lightOutline');
     }
 
     function customTypeById(type) {
       return (settings.customLogTypes || []).find(x => x.id === type);
     }
     function defaultTypeColor(type) {
-      return {
-        one: appColor('one'),
-        two: appColor('two'),
-        three: appColor('three'),
-        food: appColor('food'),
-        feeling: appColor('feeling')
-      }[type] || CUSTOM_LOG_COLORS[0].value;
+      return DEFAULT_LOG_TYPE_COLORS[type] || CUSTOM_LOG_COLORS[0].value;
     }
     function logTypeColor(type) {
       settings.logTypeColors = settings.logTypeColors || {};
@@ -979,6 +1174,7 @@
       const bits = [];
       if (e.type === 'one') {
         if (e.one_urgent) bits.push('urgent');
+        if (e.one_pre_activity) bits.push('pre-activity');
         if (e.one_uncomfortable) bits.push('uncomfortable');
         if (e.one_volume_low) bits.push('low');
         if (e.one_volume_standard) bits.push('standard');
@@ -1008,7 +1204,8 @@
       $(`#${activeTab}Screen`).classList.add('active');
       $$('.nav button').forEach(b => b.classList.toggle('active', b.dataset.nav === activeTab));
       $('#pageTitle').textContent = ({ log: 'Log', calendar: 'Calendar', summary: 'Summary', settings: 'Settings' })[activeTab];
-      renderLog(); renderCalendar(); renderSummary(); renderSettings();
+      const renderActive = { log: renderLog, calendar: renderCalendar, summary: renderSummary, settings: renderSettings }[activeTab];
+      if (renderActive) renderActive();
     }
 
     function rewindSvg() {
@@ -1017,24 +1214,37 @@
       </svg>`;
     }
 
-    function trackerCard(type, cardClass, counterText, full = false) {
+    function readableTextColor(hex) {
+      const value = normalizeHex(hex);
+      if (!isValidHex(value)) return '#f4f4f4';
+      const full = value.length === 4 ? '#' + value.slice(1).split('').map(ch => ch + ch).join('') : value;
+      const r = parseInt(full.slice(1, 3), 16);
+      const g = parseInt(full.slice(3, 5), 16);
+      const b = parseInt(full.slice(5, 7), 16);
+      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+      return brightness > 145 ? '#111111' : '#f4f4f4';
+    }
+    function logCardStyle(type) {
+      const color = logTypeColor(type);
+      return `style="--custom-log-color:${color}; --custom-log-text:${readableTextColor(color)};"`;
+    }
+    function entryColorStyle(type) {
+      return `style="--entry-color:${logTypeColor(type)};"`;
+    }
+
+    function trackerCard(type, cardClass, counterText) {
       const labelHtml = settings.showLogScreenLabels ? `<div class="log-label">${escapeHtml(typeLabel(type))}</div>` : '';
-      const counterHtml = `<div class="log-counter-row"><div class="counter">${counterText}</div>${labelHtml}</div>`;
-      const hasCustomColor = isCustomType(type) || (settings.logTypeColors && settings.logTypeColors[type]);
-      const style = hasCustomColor ? `style="--custom-log-color:${logTypeColor(type)}; background: var(--custom-log-color); color:#f4f4f4;"` : '';
-      if (full) {
-        return `${counterHtml}
-          <div class="tracker-card ${cardClass}" ${style}>
-            <button class="track-part left" aria-label="Log previous" onclick="openBackdateSheet('${type}')">${rewindSvg()}</button>
-            <button class="track-part right" aria-label="Log Now" onclick="openEntrySheet('${type}', new Date(), false)"><span class="track-now-label">Log Now</span></button>
-          </div>`;
-      }
+      const counterHtml = settings.showLogElapsedSincePrevious
+        ? `<div class="log-counter-row"><div class="counter">${counterText}</div>${labelHtml}</div>`
+        : (settings.showLogScreenLabels ? `<div class="log-counter-row"><div></div>${labelHtml}</div>` : '');
       return `${counterHtml}
-        <div class="tracker-card ${cardClass}" ${style}>
-          <button class="track-part left" aria-label="Log previous" onclick="openBackdateSheet('${type}')">${rewindSvg()}</button>
-          <button class="track-part right" aria-label="Log Now" onclick="openEntrySheet('${type}', new Date(), false)"><span class="track-now-label">Log Now</span></button>
+        <div class="tracker-card ${cardClass} log-colored" ${logCardStyle(type)}>
+          <span class="log-card-dot" aria-hidden="true"></span>
+          <button class="track-part left" data-action="log-previous" data-type="${type}" aria-label="Log previous">${rewindSvg()}</button>
+          <button class="track-part right" data-action="log-now" data-type="${type}" aria-label="Log Now"><span class="track-now-label">Log Now</span></button>
         </div>`;
     }
+
 
     function isLogButtonVisible(type) {
       const defaults = { one: true, two: true, three: true, food: true, feeling: true };
@@ -1051,8 +1261,8 @@
       activeCustomTypes().forEach(t => {
         if (isLogButtonVisible(t.id)) cards.push(trackerCard(t.id, customCardClass(t.id), formatSince(t.id)));
       });
-      if (isLogButtonVisible('feeling')) cards.push(trackerCard('feeling', 'card-feeling', feelingStatusToday(), true));
-      $('#logScreen').innerHTML = cards.length ? cards.join('') : `<div class="panel"><h2>No log buttons visible</h2><div class="small">Turn buttons back on in Settings → Log Types.</div></div>`;
+      if (isLogButtonVisible('feeling')) cards.push(trackerCard('feeling', 'card-feeling', feelingStatusToday()));
+      $('#logScreen').innerHTML = cards.length ? cards.join('') : `<div class="panel empty-state"><h3>No log buttons visible</h3><div class="small">Turn buttons back on in Settings → Log Types.</div></div>`;
     }
 
     function openSheet(html) {
@@ -1181,6 +1391,7 @@
           <div class="section-label">Urgency</div>
           <div class="pill-grid">
             ${pill('one_urgent', 'Urgent', entry?.one_urgent)}
+            ${pill('one_pre_activity', 'Pre-Activity', entry?.one_pre_activity)}
             ${pill('one_uncomfortable', 'Uncomfortable', entry?.one_uncomfortable)}
           </div>
           <div class="section-label">Volume</div>
@@ -1238,7 +1449,7 @@
 
     function blankEntryFields() {
       return {
-        one_urgent: false, one_uncomfortable: false, one_volume_low: false, one_volume_standard: false, one_volume_high: false,
+        one_urgent: false, one_pre_activity: false, one_uncomfortable: false, one_volume_low: false, one_volume_standard: false, one_volume_high: false,
         two_urgent: false, two_uncomfortable: false, two_solid: false, two_loose: false, two_liquid: false,
         feeling_rating: null,
         food_items: []
@@ -1263,6 +1474,7 @@
       };
       if (type === 'one') {
         base.one_urgent = selected('one_urgent');
+        base.one_pre_activity = selected('one_pre_activity');
         base.one_uncomfortable = selected('one_uncomfortable');
         base.one_volume_low = selected('one_volume_low');
         base.one_volume_standard = selected('one_volume_standard');
@@ -1283,7 +1495,7 @@
         const chosen = $('#feelingGrid .face-btn.selected');
         base.feeling_rating = chosen ? chosen.dataset.feeling : null;
         if (!editingEntryId) {
-          const sameDayFeelings = entriesOfType('feeling').filter(e => isInTrackingDay(e.event_at, new Date(eventIso)));
+          const sameDayFeelings = entriesForTrackingDay(new Date(eventIso)).filter(e => e.type === 'feeling');
           if (sameDayFeelings.length >= 2) {
             toast('Max two feelings per day');
             return;
@@ -1303,9 +1515,7 @@
     }
 
     function feelingsForDay(baseDate) {
-      return entriesOfType('feeling')
-        .filter(e => e.feeling_rating && isInTrackingDay(e.event_at, baseDate))
-        .sort((a,b)=> new Date(a.event_at)-new Date(b.event_at));
+      return entriesForTrackingDay(baseDate).filter(e => e.type === 'feeling' && e.feeling_rating);
     }
     function feelingSummaryForDay(baseDate) {
       const feelings = feelingsForDay(baseDate);
@@ -1327,12 +1537,15 @@
       const startOffset = first.getDay();
       const monthName = viewedMonth.toLocaleDateString([], { month: 'long', year: 'numeric' });
       const today = new Date();
+      let monthEntryCount = 0;
       let cells = '';
       for (let i=0; i<startOffset; i++) cells += `<div class="day empty"></div>`;
       for (let d=1; d<=daysInMonth; d++) {
         const date = new Date(y, m, d, 12, 0, 0);
-        const count = entriesOfType('one').filter(e => isInTrackingDay(e.event_at, date)).length;
+        const dayEntries = entriesForTrackingDay(date);
+        const count = dayEntries.filter(e => e.type === 'one').length;
         const feeling = feelingSummaryForDay(date);
+        if (entriesForTrackingDay(date).length) monthEntryCount++;
         const isToday = y === today.getFullYear() && m === today.getMonth() && d === today.getDate();
         cells += `<button class="day ${isToday ? 'today' : ''}" onclick="openDayDetail('${date.toISOString()}')">
           <span class="date-num">${d}</span>
@@ -1353,6 +1566,7 @@
         </div>
         <div class="dow"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>
         <div class="calendar-grid">${cells}</div>
+        ${!monthEntryCount ? `<div class="panel empty-state"><h3>No entries this month yet</h3><div class="small">Log an entry or use the arrows to view another month.</div></div>` : ''}
         ${calendarMode === 'pees' ? `<div class="legend" aria-label="Pee count legend">
           <div class="legend-item low-key">1–3</div><div class="legend-item mid-key">4–6</div><div class="legend-item high-key">7–8</div><div class="legend-item max-key">9+</div>
         </div>` : `<div class="small" style="margin-top:12px;text-align:center;">Feeling view shows one face for the day. If two different feelings were logged, the face is split first-to-last.</div>`}`;
@@ -1410,28 +1624,34 @@
 
     function openDayDetail(iso) {
       const base = new Date(iso);
-      const dayEntries = visibleEntries().filter(e => isInTrackingDay(e.event_at, base)).sort((a,b)=> new Date(a.event_at)-new Date(b.event_at));
-      const rows = dayEntries.length ? dayEntries.map(e => entryRow(e)).join('') : `<div class="small">No entries for this day.</div>`;
+      const dayEntries = entriesForTrackingDay(base);
+      const sortedPees = entriesOfType('one');
+      const rows = dayEntries.length ? dayEntries.map(e => entryRow(e, sortedPees)).join('') : `<div class="small">No entries for this day.</div>`;
       const feeling = feelingSummaryForDay(base);
       openSheet(`
         <div class="sheet-head"><div><div class="day-title-row"><div class="sheet-title">${formatDate(base)}</div>${feeling || ''}</div><div class="small">4:00 AM day boundary</div></div><button class="icon-btn" onclick="closeSheet()">×</button></div>
         <div class="list">${rows}</div>
       `);
     }
-    function previousOneInterval(entry) {
+    function previousOneInterval(entry, sortedPees = entriesOfType('one')) {
       if (entry.type !== 'one') return null;
       const eventTime = new Date(entry.event_at).getTime();
-      const previous = entriesOfType('one')
-        .filter(e => e.id !== entry.id && new Date(e.event_at).getTime() < eventTime)
-        .sort((a,b)=> new Date(b.event_at)-new Date(a.event_at))[0];
-      if (!previous) return null;
-      const hours = (eventTime - new Date(previous.event_at).getTime()) / 36e5;
-      return hours >= 0 ? hours : null;
+      for (let i = sortedPees.length - 1; i >= 0; i--) {
+        const previous = sortedPees[i];
+        if (previous.id === entry.id) continue;
+        const previousTime = new Date(previous.event_at).getTime();
+        if (previousTime < eventTime) {
+          const hours = (eventTime - previousTime) / 36e5;
+          return hours >= 0 ? hours : null;
+        }
+      }
+      return null;
     }
     function entryLabels(e) {
       const labels = [];
       if (e.type === 'one') {
         if (e.one_urgent) labels.push('Urgent');
+        if (e.one_pre_activity) labels.push('Pre-Activity');
         if (e.one_uncomfortable) labels.push('Uncomfortable');
         if (e.one_volume_low) labels.push('Low');
         if (e.one_volume_standard) labels.push('Standard');
@@ -1451,13 +1671,13 @@
       }
       return labels;
     }
-    function entryRow(e) {
-      const interval = previousOneInterval(e);
+    function entryRow(e, sortedPees = entriesOfType('one')) {
+      const interval = previousOneInterval(e, sortedPees);
       const labels = entryLabels(e);
       const intervalText = interval === null ? '' : `<div class="entry-sub">${interval.toFixed(1)}h since last pee</div>`;
       const labelText = labels.length ? `<div class="${e.type === 'food' ? 'food-details' : 'entry-labels'}">${escapeHtml(labels.join(' · '))}</div>` : '';
       const noteText = e.notes ? `<div class="entry-note">${escapeHtml(e.notes)}</div>` : '';
-      return `<div class="entry-row type-${e.type}">
+      return `<div class="entry-row type-${e.type} log-entry-colored" ${entryColorStyle(e.type)}>
         <div class="entry-main"><div class="entry-title">${formatTime(new Date(e.event_at))} · ${typeLabel(e.type)}</div>${intervalText}${labelText}${noteText || (!labels.length ? '<div class="entry-sub">No details</div>' : '')}</div>
         <div class="row-actions"><button class="mini-btn" onclick="editEntry('${e.id}')">Edit</button><button class="mini-btn danger" onclick="deleteEntry('${e.id}')">Delete</button></div>
       </div>`;
@@ -1468,11 +1688,11 @@
     }
 
     function renderSummary() {
-      const one = entriesOfType('one').sort((a,b)=> new Date(a.event_at)-new Date(b.event_at));
+      const one = entriesOfType('one');
       const countsByDay = [];
       for (let i=6;i>=0;i--) {
         const d = new Date(); d.setDate(d.getDate()-i);
-        countsByDay.push(one.filter(e => isInTrackingDay(e.event_at, d)).length);
+        countsByDay.push(entriesForTrackingDay(d).filter(e => e.type === 'one').length);
       }
       const avgCount = countsByDay.reduce((a,b)=>a+b,0) / 7;
       const lastTenOne = one.slice(-10);
@@ -1482,15 +1702,15 @@
       const releases30 = entriesOfType('three').filter(e => new Date(e.event_at) >= thirtyAgo).length;
 
       const timelineDate = summaryViewedDate || new Date();
-      const timelineEntries = visibleEntries()
-        .filter(e => isInTrackingDay(e.event_at, timelineDate))
-        .sort((a,b)=> new Date(a.event_at)-new Date(b.event_at));
+      const timelineEntries = entriesForTrackingDay(timelineDate);
+      const dailyNote = dailyNoteForDay(timelineDate);
+      const dailyNoteHtml = dailyNote ? `<div class="daily-note-box"><strong>Daily note</strong><div class="small">${escapeHtml(dailyNote)}</div></div>` : '';
       const timeline = timelineEntries.length ? timelineEntries.map(e => {
         const labels = entryLabels(e);
         const note = e.notes ? `<div class="entry-note">${escapeHtml(e.notes)}</div>` : '';
         const details = labels.length ? `<div class="${e.type === 'food' ? 'food-details' : 'entry-labels'}">${escapeHtml(labels.join(' · '))}</div>` : '';
-        return `<div class="timeline-row type-${e.type}"><div class="timeline-time">${formatTime(new Date(e.event_at))}</div><div class="timeline-main"><strong>${typeLabel(e.type)}</strong>${details}${note}</div></div>`;
-      }).join('') : `<div class="small">No entries logged for this day.</div>`;
+        return `<div class="timeline-row type-${e.type} log-entry-colored" ${entryColorStyle(e.type)}><div class="timeline-time">${formatTime(new Date(e.event_at))}</div><div class="timeline-main"><strong>${typeLabel(e.type)}</strong>${details}${note}</div></div>`;
+      }).join('') : `<div class="empty-state"><h3>No entries logged for this day</h3><div class="small">Use the Log tab to add entries, or move to another day.</div></div>`;
 
       const isToday = isSameTrackingDay(timelineDate, new Date());
       $('#summaryScreen').innerHTML = `
@@ -1507,11 +1727,61 @@
               <div class="small">Timeline</div>
             </div>
             <button class="today-btn" onclick="goToCurrentSummaryDay()">Current Day</button>
+            <button class="today-btn" onclick="openDailyNoteSheet(summaryViewedDate || new Date())">Daily Note</button>
+            <button class="today-btn" onclick="openTimelineEditor(summaryViewedDate || new Date())">Edit Day</button>
             <div class="arrow-row"><button onclick="changeSummaryDay(-1)">‹</button><button onclick="changeSummaryDay(1)">›</button></div>
           </div>
+          ${dailyNoteHtml}
           <div class="timeline">${timeline}</div>
         </div>
       `;
+    }
+
+
+
+    function dailyNoteForDay(date) {
+      settings.dailyNotes = settings.dailyNotes || {};
+      return settings.dailyNotes[trackingDayKey(date)] || '';
+    }
+    function openDailyNoteSheet(date = new Date()) {
+      const d = new Date(date);
+      const key = trackingDayKey(d);
+      const note = settings.dailyNotes?.[key] || '';
+      openSheet(`
+        <div class="sheet-head"><div><div class="sheet-title">Daily Note</div><div class="small">${formatDate(startOfTrackingDay(d))}</div></div><button class="icon-btn" onclick="closeSheet()">×</button></div>
+        <textarea id="dailyNoteText" placeholder="Optional note for this tracking day">${escapeHtml(note)}</textarea>
+        <button class="save-btn" onclick="saveDailyNote('${key}')">Save Note</button>
+        ${note ? `<button class="danger-btn" onclick="clearDailyNote('${key}')">Clear Note</button>` : ''}
+      `);
+    }
+    function saveDailyNote(key) {
+      settings.dailyNotes = settings.dailyNotes || {};
+      const value = ($('#dailyNoteText')?.value || '').trim();
+      if (value) settings.dailyNotes[key] = value;
+      else delete settings.dailyNotes[key];
+      saveSettings();
+      closeSheet();
+      render();
+      toast('Daily note saved');
+    }
+    function clearDailyNote(key) {
+      if (!confirm('Clear this daily note?')) return;
+      settings.dailyNotes = settings.dailyNotes || {};
+      delete settings.dailyNotes[key];
+      saveSettings();
+      closeSheet();
+      render();
+      toast('Daily note cleared');
+    }
+    function openTimelineEditor(date = new Date()) {
+      const d = new Date(date);
+      const dayEntries = entriesForTrackingDay(d);
+      const sortedPees = entriesOfType('one');
+      const rows = dayEntries.length ? dayEntries.map(e => entryRow(e, sortedPees)).join('') : `<div class="empty-state"><h3>No entries to edit</h3><div class="small">This tracking day does not have any entries yet.</div></div>`;
+      openSheet(`
+        <div class="sheet-head"><div><div class="sheet-title">Edit Timeline</div><div class="small">${formatDate(startOfTrackingDay(d))}</div></div><button class="icon-btn" onclick="closeSheet()">×</button></div>
+        <div class="list">${rows}</div>
+      `);
     }
 
     function isSameTrackingDay(a, b) {
@@ -1544,7 +1814,9 @@
     }
     function toggleSettingsSection(id) {
       settings.openSections = settings.openSections || {};
-      settings.openSections[id] = !(settings.openSections[id] ?? false);
+      const section = document.getElementById(`section_${id}`);
+      const currentlyOpen = section?.classList.contains('open') || false;
+      settings.openSections[id] = !currentlyOpen;
       saveSettings(); renderSettings();
     }
     function renderSettings() {
@@ -1554,13 +1826,15 @@
       $('#settingsScreen').innerHTML = `
         ${settingSection('export', 'Export', `
           <button class="save-btn" onclick="exportCsvPreset('all')">All</button>
-          <button class="secondary-btn" onclick="exportCsvPreset('year')">Previous Year</button>
           <button class="secondary-btn" onclick="exportCsvPreset('30')">Previous 30 Days</button>
           <button class="secondary-btn" onclick="exportCsvPreset('7')">Previous 7 Days</button>
+          <button class="secondary-btn" onclick="exportJsonBackup()">Export JSON Backup</button>
+          <button class="secondary-btn" onclick="importJsonBackup()">Import JSON Backup</button>
         `, true)}
         ${settingSection('visiblelogs', 'Log Types', `
-          <div class="settings-row"><div><strong>Available types</strong><div class="small">Toggle visibility, add custom log types, or archive custom types. Existing data is preserved for CSV export.</div></div><button class="mini-btn" onclick="addCustomLogType()">+</button></div>
+          <div class="settings-row"><div><strong>Available types</strong><div class="small">Toggle visibility, add custom log types, or archive custom types. Existing data is preserved for CSV export.</div></div><button type="button" class="add-btn" data-action="add-custom-log-type" aria-label="Add custom log type">+</button></div>
           ${logScreenLabelsToggleRow()}
+          ${logElapsedToggleRow()}
           ${visibleLogToggleRow('one', 'Pee')}
           ${visibleLogToggleRow('two', 'Poop')}
           ${visibleLogToggleRow('three', 'Release')}
@@ -1568,17 +1842,23 @@
           ${visibleLogToggleRow('feeling', 'Feeling')}
           ${customLogTypeRows()}
         `)}
-        ${settingSection('colors', 'Color Customization', `
-          <div class="small" style="margin-bottom:10px;">Customize app colors with hex codes. These apply immediately and are saved locally.</div>
-          <div class="list">${colorCustomizationRows()}</div>
-          <button class="danger-btn" onclick="restoreDefaultColors()">Restore Default Colors</button>
+        ${settingSection('colors', 'Color Themes', `
+          <div class="small" style="margin-bottom:10px;">Choose the overall app theme. Log type colors are customized from the Log Types section.</div>
+          <div class="list">${colorThemeRows()}</div>
         `)}
         ${settingSection('foodquick', 'Food/Drink Quick Log', `
-          <div class="settings-row"><div><strong>Quick options</strong><div class="small">These appear when logging Food/Drink.</div></div><button class="mini-btn" onclick="addFoodQuickOption()">+</button></div>
-          <div class="list">${foodOptions.length ? foodOptions.map((opt, i) => `<div class="settings-row"><div>${escapeHtml(opt)}</div><button class="mini-btn danger" onclick="removeFoodQuickOption(${i})">Remove</button></div>`).join('') : '<div class="small">No quick options yet.</div>'}</div>
+          <div class="settings-row"><div><strong>Quick options</strong><div class="small">These appear in this same order when logging Food/Drink.</div></div><button type="button" class="add-btn" data-action="add-food-quick-option" aria-label="Add Food/Drink quick option">+</button></div>
+          <div class="list">${foodOptions.length ? foodOptions.map((opt, i) => foodQuickOptionRow(opt, i, foodOptions.length)).join('') : '<div class="small">No quick options yet.</div>'}</div>
         `)}
-        ${settingSection('cloud', 'Cloud backup', `
-          <div class="settings-row"><div><strong>Status</strong><div class="small">${hasConfig ? 'Supabase configured' : 'Paste your Supabase Project URL and anon public key.'}</div></div><span class="small">${hasConfig ? 'ready' : 'not connected'}</span></div>
+        ${settingSection('data', 'Data', `
+          <div class="settings-row"><div><strong>Entries</strong><div class="small">${visibleEntries().length} active, ${entries.filter(e=>e.deleted_at).length} deleted</div></div></div>
+          <button class="danger-btn" onclick="clearAllData()">Clear All Local Data</button>
+        `)}
+        ${settingSection('advanced', 'Advanced', `
+          <div class="settings-row"><div><strong>Demo data</strong><div class="small">Adds sample pee entries for testing charts and exports.</div></div></div>
+          <button class="secondary-btn" onclick="seedDemoData()">Add Demo Data</button>
+          <div class="custom-type-divider"></div>
+          <div class="settings-row"><div><strong>Cloud backup</strong><div class="small">Optional Supabase backup settings. Kept here so the main Settings screen stays cleaner.</div></div><span class="small">${hasConfig ? 'ready' : 'not connected'}</span></div>
           <div class="settings-row"><div><strong>Last sync</strong><div class="small">${lastSync}</div></div></div>
           <div class="sync-form">
             <label>Project URL</label>
@@ -1600,24 +1880,30 @@
           </div>
           <div class="small" style="margin-top:12px;">Backup saves active and deleted entries so deletes can sync too. Data still saves locally first.</div>
         `)}
-        ${settingSection('data', 'Data', `
-          <div class="settings-row"><div><strong>Entries</strong><div class="small">${visibleEntries().length} active, ${entries.filter(e=>e.deleted_at).length} deleted</div></div></div>
-          <button class="secondary-btn" onclick="seedDemoData()">Add Demo Data</button>
-          <button class="danger-btn" onclick="clearAllData()">Clear All Local Data</button>
-        `)}
-        ${settingSection('about', 'About', `<div class="small"><strong>V4.26.18</strong><br>Single-file local web app. Add this page to your iPhone Home Screen from Safari for app-like use.</div>`)}
+        ${settingSection('about', 'About', `<div class="small"><strong>V4.27.0</strong><br>Single-file local web app. Add this page to your iPhone Home Screen from Safari for app-like use.</div>`)}
       `;
     }
     function logScreenLabelsToggleRow() {
       const on = !!settings.showLogScreenLabels;
       return `<button class="visible-log-card" onclick="toggleLogScreenLabels()">
-        <div><strong>Log screen labels</strong><div class="small">${on ? 'Labels shown above log cards' : 'Labels hidden on Log screen'}</div></div>
+        <div><strong>Show log labels</strong><div class="small">${on ? 'Labels shown above log cards' : 'Labels hidden on Log screen'}</div></div>
         <span class="toggle-switch ${on ? 'on' : ''}" aria-hidden="true"></span>
       </button>`;
     }
     function toggleLogScreenLabels() {
       settings.showLogScreenLabels = !settings.showLogScreenLabels;
-      saveSettings(); render(); toast(`Log screen labels ${settings.showLogScreenLabels ? 'shown' : 'hidden'}`);
+      saveSettings(); render(); toast(`Log labels ${settings.showLogScreenLabels ? 'shown' : 'hidden'}`);
+    }
+    function logElapsedToggleRow() {
+      const on = settings.showLogElapsedSincePrevious !== false;
+      return `<button class="visible-log-card" onclick="toggleLogElapsedSincePrevious()">
+        <div><strong>Show time since last entry</strong><div class="small">${on ? 'Time since previous shown on Log screen' : 'Time since previous hidden on Log screen'}</div></div>
+        <span class="toggle-switch ${on ? 'on' : ''}" aria-hidden="true"></span>
+      </button>`;
+    }
+    function toggleLogElapsedSincePrevious() {
+      settings.showLogElapsedSincePrevious = !(settings.showLogElapsedSincePrevious !== false);
+      saveSettings(); render(); toast(`Time since last entry ${settings.showLogElapsedSincePrevious ? 'shown' : 'hidden'}`);
     }
     function pencilIcon() {
       return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.8 2.8 0 0 0-4-4L4 16v4z"></path><path d="M13.5 6.5l4 4"></path></svg>`;
@@ -1625,26 +1911,16 @@
     function visibleLogToggleRow(type, label) {
       const on = isLogButtonVisible(type);
       const next = !on;
-      const isCustom = isCustomType(type);
       const colorDot = `<span class="custom-color-dot" style="background:${logTypeColor(type)}"></span>`;
-      if (isCustom) {
-        return `<div class="visible-log-card">
-          <div onclick="setLogButtonVisibility('${type}', ${next})" style="flex:1; min-width:0; cursor:pointer;">
-            <strong>${colorDot}${escapeHtml(label)}</strong>
-            <div class="small">${on ? 'Shown on Log screen' : 'Hidden from Log screen'}</div>
-          </div>
-          <div class="custom-actions">
-            <button class="edit-icon-btn" aria-label="Edit ${escapeHtml(label)}" onclick="event.stopPropagation(); openCustomLogTypeEditor('${type}')">${pencilIcon()}</button>
-            <button type="button" class="toggle-switch ${on ? 'on' : ''}" aria-label="${on ? 'Hide' : 'Show'} ${escapeHtml(label)}" onclick="event.stopPropagation(); setLogButtonVisibility('${type}', ${next})"></button>
-          </div>
-        </div>`;
-      }
       return `<div class="visible-log-card">
         <div onclick="setLogButtonVisibility('${type}', ${next})" style="flex:1; min-width:0; cursor:pointer;">
           <strong>${colorDot}${escapeHtml(label)}</strong>
           <div class="small">${on ? 'Shown on Log screen' : 'Hidden from Log screen'}</div>
         </div>
-        <button type="button" class="toggle-switch ${on ? 'on' : ''}" aria-label="${on ? 'Hide' : 'Show'} ${escapeHtml(label)}" onclick="event.stopPropagation(); setLogButtonVisibility('${type}', ${next})"></button>
+        <div class="custom-actions">
+          <button class="edit-icon-btn" aria-label="Change ${escapeHtml(label)} color" onclick="event.stopPropagation(); openLogTypeColorPicker('${type}')">${pencilIcon()}</button>
+          <button type="button" class="toggle-switch ${on ? 'on' : ''}" aria-label="${on ? 'Hide' : 'Show'} ${escapeHtml(label)}" onclick="event.stopPropagation(); setLogButtonVisibility('${type}', ${next})"></button>
+        </div>
       </div>`;
     }
     function normalizeVisibleLogButtons() {
@@ -1775,24 +2051,28 @@
       setLogTypeColor(id, color);
     }
 
-    function colorCustomizationRows() {
-      const rows = COLOR_CONTROLS.map(([key, label]) => {
-        const value = appColor(key);
-        return `<div class="color-custom-row">
-          <label for="color_${key}">${escapeHtml(label)}</label>
-          <div id="swatch_${key}" class="color-custom-swatch" style="background:${escapeHtml(value)}"></div>
-          <input id="color_${key}" value="${escapeHtml(value)}" maxlength="7" oninput="previewAppColor('${key}')" onchange="setAppColor('${key}')">
-        </div>`;
+    function colorThemeRows() {
+      const active = settings.colorTheme || 'dark';
+      return Object.entries(COLOR_THEMES).map(([id, theme]) => {
+        const c = theme.colors;
+        const previewClass = theme.outline ? 'theme-preview outline' : 'theme-preview';
+        return `<button class="theme-option-card ${active === id ? 'active' : ''}" onclick="setColorTheme('${id}')">
+          <div><strong>${escapeHtml(theme.label)}</strong><div class="small">${escapeHtml(theme.description)}</div></div>
+          <div class="${previewClass}" style="--preview-bg:${c.bg}; --preview-card:${theme.outline ? c.panel2 : c.panel}; --preview-line:${c.line}; --preview-accent:${c.accent2};"><span></span><span></span></div>
+        </button>`;
       }).join('');
-      const customRows = activeCustomTypes().length ? `<div class="custom-type-divider"></div><div class="custom-type-heading">Custom Log Types</div>` + activeCustomTypes().map(t => {
-        const value = logTypeColor(t.id);
-        return `<div class="color-custom-row">
-          <label for="color_${t.id}">${escapeHtml(t.label)}</label>
-          <div id="swatch_${t.id}" class="color-custom-swatch" style="background:${escapeHtml(value)}"></div>
-          <input id="color_${t.id}" value="${escapeHtml(value)}" maxlength="7" oninput="previewLogTypeColor('${t.id}')" onchange="setLogTypeColorFromInput('${t.id}')">
-        </div>`;
-      }).join('') : '';
-      return rows + customRows;
+    }
+    function setColorTheme(id) {
+      if (!COLOR_THEMES[id]) return;
+      settings.colorTheme = id;
+      saveSettings();
+      applyAppColors();
+      render();
+      toast(`${COLOR_THEMES[id].label} theme applied`);
+    }
+
+    function colorCustomizationRows() {
+      return colorThemeRows();
     }
     function previewAppColor(key) {
       const input = document.getElementById(`color_${key}`);
@@ -1845,14 +2125,27 @@
       setLogTypeColor(id, value);
     }
     function restoreDefaultColors() {
-      if (!confirm('Restore all default colors?')) return;
-      settings.appColors = {};
+      if (!confirm('Restore default theme and log type colors?')) return;
+      settings.colorTheme = 'dark';
       settings.logTypeColors = {};
       settings.customLogTypes = (settings.customLogTypes || []).map(t => ({ ...t, color: CUSTOM_LOG_COLORS[0].value }));
       saveSettings();
       applyAppColors();
       render();
       toast('Default colors restored');
+    }
+
+    function foodQuickOptionRow(opt, index, total) {
+      const isFirst = index === 0;
+      const isLast = index === total - 1;
+      return `<div class="settings-row quick-option-row">
+        <div class="quick-option-label">${escapeHtml(opt)}</div>
+        <div class="quick-option-actions">
+          <button type="button" class="mini-btn quick-move-btn" data-action="move-food-quick-option" data-index="${index}" data-direction="-1" aria-label="Move ${escapeHtml(opt)} up" ${isFirst ? 'disabled' : ''}>↑</button>
+          <button type="button" class="mini-btn quick-move-btn" data-action="move-food-quick-option" data-index="${index}" data-direction="1" aria-label="Move ${escapeHtml(opt)} down" ${isLast ? 'disabled' : ''}>↓</button>
+          <button type="button" class="mini-btn danger" data-action="remove-food-quick-option" data-index="${index}">Remove</button>
+        </div>
+      </div>`;
     }
 
     function addFoodQuickOption() {
@@ -1863,9 +2156,23 @@
       if (!settings.foodQuickOptions.includes(clean)) settings.foodQuickOptions.push(clean);
       saveSettings(); renderSettings(); toast('Quick option added');
     }
+    function moveFoodQuickOption(index, direction) {
+      settings.foodQuickOptions = settings.foodQuickOptions || [];
+      const from = Number(index);
+      const to = from + Number(direction);
+      if (Number.isNaN(from) || Number.isNaN(to) || to < 0 || to >= settings.foodQuickOptions.length) return;
+      const [item] = settings.foodQuickOptions.splice(from, 1);
+      settings.foodQuickOptions.splice(to, 0, item);
+      saveSettings();
+      renderSettings();
+      toast('Quick option moved');
+    }
+
     function removeFoodQuickOption(index) {
       settings.foodQuickOptions = settings.foodQuickOptions || [];
-      settings.foodQuickOptions.splice(index, 1);
+      const i = Number(index);
+      if (Number.isNaN(i) || i < 0 || i >= settings.foodQuickOptions.length) return;
+      settings.foodQuickOptions.splice(i, 1);
       saveSettings(); renderSettings(); toast('Quick option removed');
     }
 
@@ -1972,6 +2279,59 @@
       settings.lastSyncAt = nowIso(); saveSettings(); saveEntries(); render(); toast('Cloud data merged');
     }
 
+
+
+    function exportJsonBackup() {
+      const payload = {
+        version: 1,
+        exported_at: nowIso(),
+        entries,
+        settings
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `tracker_backup_${dateOnlyLocal(new Date())}.json`;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      toast('JSON backup exported');
+    }
+    function importJsonBackup() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/json,.json';
+      input.onchange = () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const payload = JSON.parse(String(reader.result || '{}'));
+            if (!Array.isArray(payload.entries)) throw new Error('Missing entries array');
+            if (!confirm('Import this JSON backup? This will replace current local entries and settings.')) return;
+            entries = payload.entries;
+            settings = Object.assign({}, payload.settings || {});
+            settings.visibleLogButtons = Object.assign({ one: true, two: true, three: true, food: true, feeling: true }, settings.visibleLogButtons || {});
+            settings.customLogTypes = settings.customLogTypes || [];
+            settings.appColors = settings.appColors || {};
+            settings.dailyNotes = settings.dailyNotes || {};
+            if (settings.showLogScreenLabels === undefined) settings.showLogScreenLabels = false;
+            if (settings.showLogElapsedSincePrevious === undefined) settings.showLogElapsedSincePrevious = true;
+            if (!settings.colorTheme) settings.colorTheme = 'dark';
+            saveSettings();
+            saveEntries();
+            applyAppColors();
+            render();
+            toast('JSON backup imported');
+          } catch (err) {
+            toast('Invalid JSON backup');
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
+
     function csvEscape(value) {
       if (value === null || value === undefined) return '';
       const s = String(value);
@@ -1994,9 +2354,9 @@
     function exportCsv(options={}) {
       const start = options.start || null;
       const label = options.label || 'all';
-      let data = visibleEntries().sort((a,b)=> new Date(a.event_at)-new Date(b.event_at));
+      let data = [...visibleEntries()].sort((a,b)=> new Date(a.event_at)-new Date(b.event_at));
       if (start) data = data.filter(e => new Date(e.event_at) >= start);
-      const cols = ['id','type','type_label_at_entry','type_current_label','custom_type_deleted_at','custom_type_color','event_at','created_at','updated_at','is_backdated','notes','one_urgent','one_uncomfortable','one_volume_low','one_volume_standard','one_volume_high','two_urgent','two_uncomfortable','two_solid','two_loose','two_liquid','feeling_rating','food_items','sync_status','deleted_at'];
+      const cols = ['id','type','type_label_at_entry','type_current_label','custom_type_deleted_at','custom_type_color','event_at','created_at','updated_at','is_backdated','notes','one_urgent','one_pre_activity','one_uncomfortable','one_volume_low','one_volume_standard','one_volume_high','two_urgent','two_uncomfortable','two_solid','two_loose','two_liquid','feeling_rating','food_items','sync_status','deleted_at'];
       const csv = [cols.join(',')].concat(data.map(row => cols.map(c => {
         if (c === 'type_label_at_entry') return csvEscape(row.type_label || typeLabel(row.type));
         if (c === 'type_current_label') return csvEscape(typeLabel(row.type));
@@ -2042,10 +2402,23 @@
 
     window.addEventListener('online', autoBackupPending);
 
+    document.addEventListener('click', (event) => {
+      const actionEl = event.target.closest('[data-action]');
+      if (!actionEl) return;
+      const { action, type } = actionEl.dataset;
+      if (action === 'log-now') openEntrySheet(type, new Date(), false);
+      if (action === 'log-previous') openBackdateSheet(type);
+      if (action === 'add-custom-log-type') addCustomLogType();
+      if (action === 'add-food-quick-option') addFoodQuickOption();
+      if (action === 'move-food-quick-option') moveFoodQuickOption(actionEl.dataset.index, actionEl.dataset.direction);
+      if (action === 'remove-food-quick-option') removeFoodQuickOption(actionEl.dataset.index);
+    });
+
     $$('.nav button').forEach(btn => btn.addEventListener('click', () => { activeTab = btn.dataset.nav; render(); }));
 
     // Lightweight offline-friendly behavior: this single file runs without internet once opened/saved.
     // True PWA install/service worker needs separate hosted files or a generated blob worker, so cloud/PWA sync is intentionally scaffolded.
+    applyAppColors();
     render();
   </script>
 </body>
